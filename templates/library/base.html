@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="utf-8">
+{% load static %}
+<head>
+<title>{% block title %}Library{% endblock %}</title>
+{% block head %}
+<link rel="stylesheet" href="{% static 'library/style.css' %}">
+{% endblock %}
+</head>
+<body>
+<header>
+  <h1><a href="{% url "library:index" %}">Library</a></h1>
+  <h1>{% block heading %}Library{% endblock %}</h1>
+  <h1>Profile</h1>
+</header>
+<section class="content">
+{% block content %}
+{% endblock %}
+</section>
+</body>
+</html>

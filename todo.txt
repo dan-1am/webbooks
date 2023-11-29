@@ -1,0 +1,15 @@
+sql transactions
+sql query optimizations
+tests
+purge non-existant books from db
+book addition interface
+book table of contents with links
+image gallery
+user login
+admin interface
+Book reading by parts, selected from structure or automatically if too small/large.
+fb2.zip
+fb2.zip.zip
+
+js+rest for position saving
+interface translation

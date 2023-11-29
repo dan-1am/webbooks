@@ -1,0 +1,15 @@
+{% extends "./base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+{% block heading %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ book.title }}</h1>
+{% for author in book.authors.all %}
+    <p><a href="{% url "library:author" author.id %}">{{ author.name }}</a>
+    - {{ author.book_set.count }} books
+    </p>
+{% endfor %}
+<p>File: {{ book.file }}</p>
+{{ text|safe }}
+{% endblock %}

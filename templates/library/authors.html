@@ -1,0 +1,20 @@
+{% extends "./base.html" %}
+
+{% block title %}Authors - Library{% endblock %}
+{% block heading %}Authors{% endblock %}
+
+{% block content %}
+{% if author_list %}
+    <p>{{ author_list.count }} total.</p>
+    <ul>
+    {% for author in author_list %}
+        <li>
+        <a href="{% url 'library:author' author.id %}">{{ author.name }}</a>
+        ({{ author.book_set.count }})
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No authors are available.</p>
+{% endif %}
+{% endblock%}

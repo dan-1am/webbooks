@@ -1,0 +1,8 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<ul>
+<li><a href="{% url 'library:authors' %}">Authors list</a></li>
+<li><a href="{% url 'library:duplicates' %}">Find duplicates</a></li>
+</ul>
+{% endblock %}
