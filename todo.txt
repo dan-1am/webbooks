@@ -1,4 +1,4 @@
-purge non-existent books from db
+add get_absolute_url(self) with django.utils.encoding.iri_to_uri()
 tests
 sql transactions
 sql query optimizations

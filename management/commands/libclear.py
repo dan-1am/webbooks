@@ -3,7 +3,6 @@ from django.core.management.base import BaseCommand, CommandError
 from library.models import *
 
 
-
 class Command(BaseCommand):
     help = "Clear library db"
 

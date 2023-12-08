@@ -4,6 +4,7 @@
 # www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 
 import xml.etree.ElementTree as ET
+import re
 import os
 
 
@@ -144,6 +145,26 @@ class FB2Book:
             self.html_tag(body, parts)
         return "".join(parts)
 
+
+    def subtoc(self, tree, tag, toc, level=0):
+        for section in tree.findall(tag):
+            toc.append(">"*level)
+            if section[0].tag == "title":
+                title = "".join( self.html_inside(section[0], []) )
+                toc.append( re.sub(r'<[^<]+?>', '', title) )
+                toc.append("<br>")
+            else:
+                toc.append("***<br>")
+            if level < 3:
+                self.subtoc(section, "section", toc, level+1)
+            if level < 2:
+                toc.append("<br>")
+
+
+    def toc(self):
+        toc = ["Содержание<br>\n"]
+        self.subtoc(self.root, "body", toc)
+        return "".join(toc)
 
 
 if __name__ == '__main__':

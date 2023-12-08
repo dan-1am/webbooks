@@ -27,6 +27,7 @@ a {
   color: #357;
 }
 a:hover {text-decoration: underline;}
+img {background-color: #ffffff;}
 
 header {
   width: 100%;
