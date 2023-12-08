@@ -1,0 +1,25 @@
+{% extends "library/base.html" %}
+
+{% block title %}Duplicated books{% endblock %}
+{% block heading %}Duplicated books{% endblock %}
+
+{% block content %}
+{% if book_list %}
+    <p>Total books: {{ book_list.count }}</p>
+    <ul>
+    {% for book in book_list %}
+        <li>
+        <p>
+        {{ book.hash }}:
+        <a href="{% url 'library:book' book.id %}">{{ book.title }}</a> /
+        {{ book.authors.all|join:", " }}
+        {% if book.date %} ({{ book.date }}) {% endif %} /
+        {{ book.file }}
+        </p>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No books found.</p>
+{% endif %}
+{% endblock %}

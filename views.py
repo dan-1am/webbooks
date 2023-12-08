@@ -16,7 +16,7 @@ def index(request):
 
 
 class IndexView(generic.ListView):
-    template_name = "library/authors.html"
+    template_name = "library/author_list.html"
     context_object_name = "author_list"
 
     def get_queryset(self):
@@ -81,7 +81,7 @@ def find_field_dupes(field):
     return [o[field] for o in dupes]
 
 class DuplicatesView(generic.ListView):
-    template_name = "library/books.html"
+    template_name = "library/book_list.html"
     context_object_name = "book_list"
 
     def get_queryset(self):

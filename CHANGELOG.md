@@ -1,5 +1,9 @@
 # Django Library Changelog
 
+## 2023.12.08
+Implemented user login/logout.
+Templates tweaks.
+
 ## 2023.12.03
 Set up admin interface.
 
