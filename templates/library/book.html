@@ -4,7 +4,9 @@
 {% block heading %}{{ book.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ book.title }}</h1>
+<h1>{{ book.title }}
+<a href="{% url "library:read" book.id%}">[Read]</a>
+</h1>
 <p>
 {% for author in book.authors.all %}
     <a href="{% url "library:author" author.id %}">{{ author.name }}</a>
@@ -12,7 +14,6 @@
 {% endfor %}
 </p>
 <p>Date: {{ book.date }}</p>
-<p><a href="{% url "library:read" book.id%}">Read</a></p>
 <p>Genres:
 {% for genre in book.genres.all %}
     {{ genre }}
