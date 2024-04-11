@@ -9,12 +9,12 @@
 </head>
 <body>
 <header>
-  <h1><a href="{% url "library:index" %}">Library</a></h1>
-  <h1>{% block heading %}Library{% endblock %}</h1>
+  <p><a href="{% url "library:index" %}">Library</a></p>
+  <p>{% block heading %}Library{% endblock %}</p>
 {% if user.is_authenticated %}
-  <h1>{{ user.username }} <a href="{% url "logout" %}">Log out</a></h1>
+  <p>{{ user.username }} <a href="{% url "logout" %}">Log out</a></p>
 {% else %}
-  <h1><a href="{% url "login" %}?next={{ request.path }}">Log in</a></h1>
+  <p><a href="{% url "login" %}?next={{ request.path }}">Log in</a></p>
 {% endif %}
 </header>
 <section class="content">
