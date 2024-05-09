@@ -49,13 +49,14 @@ class FB2Book:
 # tree.findall(".//{*}description")
 # or include ns separately:
 # tree.findall("xmlns:DEAL_LEVEL/xmlns:PAID_OFF", namespaces={'xmlns': 'http://www.test.com'})
+
     def strip_namespaces(self):
         for element in self.root.iter():
             element.tag = element.tag.partition('}')[-1]
 
     def author_name(self, author):
-        partnames = ("last-name","first-name","middle-name", "nickname")
-        parts = filter(None, ( author.findtext(t) for t in partnames ) )
+        partnames = ("last-name", "first-name", "middle-name", "nickname")
+        parts = filter(None, ( author.findtext(p) for p in partnames ) )
         name = ' '.join( (p.strip() for p in parts) )
         return name
 
