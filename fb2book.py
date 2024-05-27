@@ -64,9 +64,9 @@ class FB2Book:
         return [self.author_name(a) for a in info.findall("author")]
 
     def get_annotation(self, info):
-        tagged = info.find('annotation')
-        if tagged:
-            return "".join( self.html_inside(tagged) )
+        element = info.find('annotation')
+        if element:
+            return "".join( self.html_inside(element) )
         return None
 
     def get_sequence_info(self, info):
