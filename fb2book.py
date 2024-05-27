@@ -8,6 +8,54 @@ import re
 import os
 
 
+class TableOfContents:
+
+    def __init__(self):
+        self.tree = []
+        self.counts = [0]
+
+    def new_chapter(self):
+        self.counts[-1] += 1
+        chapter = dict(
+            title="untitled",
+            named=False,
+            level=len(self.counts),
+            label=f"toc{len(self.tree)}",
+            number=".".join( map(str, self.counts) ),
+        )
+        self.tree.append(chapter)
+        return chapter
+
+    def marker(self, chapter):
+        return f"<div id='{chapter['label']}'></div>"
+
+    def subsection(self):
+        chapter = self.new_chapter()
+        self.counts.append(0)
+        return self.marker(chapter)
+
+    def endsection(self):
+        self.counts.pop()
+
+    def title(self, text):
+        chapter = self.tree[-1]
+        if chapter['named']:  # several <title> tags in one section
+            chapter = self.new_chapter()
+            marker = self.marker(chapter)
+        else:
+            marker = ""
+        chapter['title'] = text
+        chapter['named'] = True
+        return marker
+
+    def html(self):
+        parts = []
+        for ch in self.tree:
+            label = ch['label']
+            parts.append(f"<a href='#{label}'>{ch['number']}. {ch['title']}</a><br>\n")
+        return "".join(parts)
+
+
 
 class FB2Book:
 
@@ -136,41 +184,34 @@ class FB2Book:
     def html_tag(self, tree, parts=None):
         if parts is None:
             parts = []
-        if tree.tag == "image":
+        tag = tree.tag
+        if tag == "image":
             self.html_picture(tree, parts)
             return parts
-        template = self.htmlmap.get(tree.tag, None) or (f"[Unknown: {tree.tag}]", "[Unknown end]")
-        parts.append( template[0] )
+        template = self.htmlmap.get(tag, None) or (f"[Unknown: {tag}]", "[Unknown end]")
+        parts.append(template[0])
+        is_section = tag in ("body","section")
+        if is_section:
+            parts.append( self.toc.subsection() )
+        elif tag == "title":
+            text = "".join( self.html_inside(tree) )
+            text = re.sub(r'<[^<]+?>', '', text)
+            parts.append( self.toc.title(text) )
         self.html_inside(tree, parts)
         parts.append( template[1] )
+        if is_section:
+            self.toc.endsection()
         return parts
 
     def html(self):
+        self.toc = TableOfContents()
         parts = self.html_coverpage()
         for body in self.root.findall('body'):
             self.html_tag(body, parts)
         return "".join(parts)
 
-
-    def subtoc(self, tree, tag, toc, level=0):
-        for section in tree.findall(tag):
-            toc.append(">"*level)
-            if section[0].tag == "title":
-                title = "".join( self.html_inside(section[0], []) )
-                toc.append( re.sub(r'<[^<]+?>', '', title) )
-                toc.append("<br>")
-            else:
-                toc.append("***<br>")
-            if level < 3:
-                self.subtoc(section, "section", toc, level+1)
-            if level < 2:
-                toc.append("<br>")
-
-
-    def toc(self):
-        toc = ["Содержание<br>\n"]
-        self.subtoc(self.root, "body", toc)
-        return "".join(toc)
+    def get_toc(self):
+        return self.toc.html()
 
 
 if __name__ == '__main__':

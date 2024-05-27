@@ -71,7 +71,8 @@ class ReadView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         book = self.object
         fb2 = FB2Book(file=book.file)
-        context['text'] = fb2.toc() + fb2.html()
+        html = fb2.html()
+        context['text'] = fb2.get_toc() + html
         return context
 
 
