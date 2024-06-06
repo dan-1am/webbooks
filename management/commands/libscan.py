@@ -1,8 +1,8 @@
 from pathlib import Path
 from hashlib import md5
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 
-from library.settings import libdir
 from library.models import *
 from library.fb2book import FB2Book
 
@@ -63,7 +63,7 @@ def scanfb2zip(file):
 
 
 def scan_lib_dir(output):
-    for file in recurse_path( Path(libdir) ):
+    for file in recurse_path( Path(settings.LIBRARY_DIR) ):
         output.write(f"File: {file}")
         if file.name.endswith(".fb2.zip"):
             scanfb2zip(file)
@@ -82,7 +82,7 @@ class Command(BaseCommand):
     help = "Scans filesystem for new books"
 
     def handle(self, *args, **options):
-        self.stdout.write(f"Searching new books in {libdir}")
+        self.stdout.write(f"Searching new books in {settings.LIBRARY_DIR}")
         scan_lib_dir(self.stdout)
         self.stdout.write(f"Clear missing books")
         clear_missing(self.stdout)
