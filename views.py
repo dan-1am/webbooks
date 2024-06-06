@@ -53,7 +53,7 @@ class AuthorView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         author = self.object
         books = author.book_set.all()
-        context['grouped'] = by_sequence(books)
+        context['grouped_books'] = by_sequence(books)
         return context
 
 

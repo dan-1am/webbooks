@@ -6,7 +6,7 @@
 {% block content %}
 <p>Total books: {{ author.book_set.count }}</p>
 
-{% for seq,books in grouped %}
+{% for seq,books in grouped_books %}
 <p>Sequence: {{ seq }}</p>
     <ol>
 {% for book in books %}
