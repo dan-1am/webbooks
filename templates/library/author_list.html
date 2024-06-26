@@ -10,7 +10,7 @@
     {% for author in author_list %}
         <li>
         <a href="{% url 'library:author' author.id %}">{{ author.name }}</a>
-        ({{ author.book_set.count }})
+        ({{ author.book_count }})
         </li>
     {% endfor %}
     </ul>

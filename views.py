@@ -16,11 +16,9 @@ def index(request):
 
 
 class IndexView(generic.ListView):
-    template_name = "library/author_list.html"
-    context_object_name = "author_list"
 
     def get_queryset(self):
-        return Author.objects.order_by("name")
+        return Author.objects.annotate(book_count=Count("book")).order_by("name")
 
 
 def group_by(sequence, getkey):
