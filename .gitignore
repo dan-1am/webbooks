@@ -2,4 +2,6 @@
 *.log
 *.swp
 *.state
+**/*.png
 /migrations
+todo.txt
