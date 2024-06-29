@@ -7,9 +7,9 @@
 {% block content %}
 <script src="{% static 'library/read_position.js' %}"></script>
 <h1>{{ book.title }}</h1>
-{% for author in book.authors.all %}
+{% for author in authors %}
     <p><a href="{% url "webbooks:author" author.id %}">{{ author.name }}</a>
-    - {{ author.book_set.count }} books
+    - {{ author.book_count }} books
     </p>
 {% endfor %}
 <p>File: {{ book.file }}</p>

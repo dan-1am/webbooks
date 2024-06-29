@@ -52,10 +52,18 @@ class AuthorView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         author = self.object
-        books = author.book_set.all()
+        books = author.book_set.select_related("sequence").all()
         context['book_count'] = len(books)
         context['grouped_books'] = by_sequence(books)
         return context
+
+
+def book_authors(book):
+    # This gives wrong book_count:
+    #authors = book.authors.all().annotate(book_count=Count("book"))
+    ids = book.authors.values("id")
+    authors = Author.objects.filter(id__in=ids).annotate(book_count=Count("book"))
+    return authors
 
 
 class BookView(generic.DetailView):
@@ -65,13 +73,8 @@ class BookView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         book = self.object
-        # This gives wrong book_count:
-        #authors = book.authors.all().annotate(book_count=Count("book"))
-        ids = book.authors.values("id")
-        authors = Author.objects.filter(id__in=ids).annotate(book_count=Count("book"))
-        context['authors'] = authors
+        context['authors'] = book_authors(book)
         return context
-
 
 
 class ReadView(generic.DetailView):
@@ -81,6 +84,7 @@ class ReadView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         book = self.object
+        context['authors'] = book_authors(book)
         fb2 = FB2Book(file=book.file)
         html = fb2.html()
         context['text'] = fb2.get_toc() + html
