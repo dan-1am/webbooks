@@ -12,12 +12,11 @@ from .fb2book import FB2Book
 #    return HttpResponse('Library index...')
 
 def index(request):
-    return render(request, "library/index.html", {})
+    return render(request, "webbooks/index.html", {})
 
 
 
 class IndexView(generic.ListView):
-    template_name = "library/author_list.html"
 
     def get_queryset(self):
         return Author.objects.annotate(book_count=Count("book")).order_by("name")
@@ -47,7 +46,7 @@ def by_sequence(books):
 
 class AuthorView(generic.DetailView):
     model = Author
-    template_name = "library/author.html"
+    template_name = "webbooks/author.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -68,7 +67,7 @@ def book_authors(book):
 
 class BookView(generic.DetailView):
     model = Book
-    template_name = "library/book.html"
+    template_name = "webbooks/book.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -79,7 +78,7 @@ class BookView(generic.DetailView):
 
 class ReadView(generic.DetailView):
     model = Book
-    template_name = "library/read.html"
+    template_name = "webbooks/read.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -97,7 +96,7 @@ def find_field_dupes(field):
     return [o[field] for o in dupes]
 
 class DuplicatesView(generic.ListView):
-    template_name = "library/book_list.html"
+    template_name = "webbooks/book_list.html"
     context_object_name = "book_list"
 
     def get_queryset(self):
