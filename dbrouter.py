@@ -1,9 +1,9 @@
 class Router:
-    """A router to control all database operations for library"""
+    """A router to control all database operations for webbooks"""
 
-    db = 'librarydb'
+    db = 'webbooksdb'
 
-    route_app_labels = {"library"}
+    route_app_labels = {"webbooks"}
 
     def db_for_read(self, model, **hints):
         if model._meta.app_label in self.route_app_labels:

@@ -4,16 +4,16 @@ Installation.
 
 Steps to use separate database.
 
-1. Add "librarydb" database to ProjectName/settings.py:
+1. Add "webbooksdb" database to ProjectName/settings.py:
 
 DATABASES = {
     'default': {
         ...
     },
     ...
-    'librarydb': {
+    'webbooksdb': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'dblib.sqlite3',
+        'NAME': BASE_DIR / 'dbwebbooks.sqlite3',
     },
 }
 
@@ -21,5 +21,5 @@ DATABASES = {
 
 DATABASE_ROUTERS = [
 ...
-"library.dbrouter.Router",
+"webbooks.dbrouter.Router",
 ]

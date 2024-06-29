@@ -9,7 +9,7 @@
 </head>
 <body>
 <header>
-  <p><a href="{% url "library:index" %}">Library</a></p>
+  <p><a href="{% url "webbooks:index" %}">Library</a></p>
   <p>{% block heading %}Library{% endblock %}</p>
 {% if user.is_authenticated %}
   <p>{{ user.username }} <a href="{% url "logout" %}">Log out</a></p>

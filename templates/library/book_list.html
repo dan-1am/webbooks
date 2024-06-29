@@ -11,7 +11,7 @@
         <li>
         <p>
         {{ book.hash }}:
-        <a href="{% url 'library:book' book.id %}">{{ book.title }}</a> /
+        <a href="{% url 'webbooks:book' book.id %}">{{ book.title }}</a> /
         {{ book.authors.all|join:", " }}
         {% if book.date %} ({{ book.date }}) {% endif %} /
         {{ book.file }}

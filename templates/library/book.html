@@ -5,11 +5,11 @@
 
 {% block content %}
 <h1>{{ book.title }}
-<a href="{% url "library:read" book.id%}">[Read]</a>
+<a href="{% url "webbooks:read" book.id%}">[Read]</a>
 </h1>
 <p>
 {% for author in authors %}
-    <a href="{% url "library:author" author.id %}">{{ author.name }}</a>
+    <a href="{% url "webbooks:author" author.id %}">{{ author.name }}</a>
     ({{ author.book_count }}){% if not forloop.last %},{% endif %}
 {% endfor %}
 </p>

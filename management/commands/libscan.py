@@ -3,8 +3,8 @@ from hashlib import md5
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
-from library.models import *
-from library.fb2book import FB2Book
+from webbooks.models import *
+from webbooks.fb2book import FB2Book
 
 
 #    try:

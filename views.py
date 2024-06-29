@@ -17,6 +17,7 @@ def index(request):
 
 
 class IndexView(generic.ListView):
+    template_name = "library/author_list.html"
 
     def get_queryset(self):
         return Author.objects.annotate(book_count=Count("book")).order_by("name")

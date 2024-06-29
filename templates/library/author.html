@@ -11,9 +11,9 @@
     <ol>
 {% for book in books %}
     <li>
-    <p><a href="{% url 'library:book' book.id %}">{{ book.title }}</a>
+    <p><a href="{% url 'webbooks:book' book.id %}">{{ book.title }}</a>
     {% if book.date %}({{ book.date }}){% endif %}
-    <a href="{% url "library:read" book.id%}">[Read]</a>
+    <a href="{% url "webbooks:read" book.id%}">[Read]</a>
     </li>
 {% endfor %}
 </ol>
