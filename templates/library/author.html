@@ -4,7 +4,7 @@
 {% block heading %}{{ author.name }}{% endblock %}
 
 {% block content %}
-<p>Total books: {{ author.book_set.count }}</p>
+<p>Total books: {{ book_count }}</p>
 
 {% for seq,books in grouped_books %}
 <p>Sequence: {{ seq }}</p>

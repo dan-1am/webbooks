@@ -1,7 +1,8 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views import generic
-from django.db.models import Count
+from django.db.models import Count,OuterRef,Subquery
+from django.db.models.functions import Coalesce
 
 from .models import *
 from .fb2book import FB2Book
@@ -51,6 +52,7 @@ class AuthorView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         author = self.object
         books = author.book_set.all()
+        context['book_count'] = len(books)
         context['grouped_books'] = by_sequence(books)
         return context
 
@@ -58,6 +60,16 @@ class AuthorView(generic.DetailView):
 class BookView(generic.DetailView):
     model = Book
     template_name = "library/book.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        book = self.object
+        # This gives wrong book_count:
+        #authors = book.authors.all().annotate(book_count=Count("book"))
+        ids = book.authors.values("id")
+        authors = Author.objects.filter(id__in=ids).annotate(book_count=Count("book"))
+        context['authors'] = authors
+        return context
 
 
 
