@@ -1,5 +1,6 @@
-from pathlib import Path
 from hashlib import md5
+from pathlib import Path
+import time
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 
@@ -78,11 +79,21 @@ def clear_missing(output):
             Book.objects.filter(pk=book["pk"]).delete()
 
 
+def stopwatch(start=None):
+    now = time.perf_counter()
+    if start is None:
+        return now
+    print(f"Elapsed {now-start:.2}s")
+    return now
+
+
 class Command(BaseCommand):
     help = "Scans filesystem for new books"
 
     def handle(self, *args, **options):
+        start = stopwatch()
         self.stdout.write(f"Searching new books in {settings.LIBRARY_DIR}")
         scan_lib_dir(self.stdout)
         self.stdout.write(f"Clear missing books")
         clear_missing(self.stdout)
+        stopwatch(start)
