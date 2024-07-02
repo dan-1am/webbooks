@@ -30,7 +30,7 @@ class Book(models.Model):
     title = models.CharField(max_length=200)
     authors = models.ManyToManyField(Author)
     date = models.CharField(max_length=10, blank=True)
-    annotation = models.CharField(max_length=2000, blank=True)
+    annotation = models.TextField(blank=True)
     sequence = models.ForeignKey(Sequence, null=True, on_delete=models.CASCADE)
     sequence_number = models.IntegerField(null=True)
     genres = models.ManyToManyField(Genre, blank=True)
