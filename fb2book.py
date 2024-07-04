@@ -115,19 +115,20 @@ class FB2Book:
         element = info.find('annotation')
         if element:
             return "".join( self.html_inside(element) )
-        return None
+        return ""
 
     def get_sequence_info(self, info):
         sequence = info.find("sequence")
         name = sequence is not None and sequence.attrib.get("name", None)
         if not name:
-            return (None, None)
+            return ("", 1)
+        name = name.strip()
         number = sequence.attrib.get("number", None)
-        if number:
-            number = number.strip()
-            if number.isdecimal():
-                number = int(number)
-        return (name.strip(), number)
+        try:
+            number = int(number)
+        except (TypeError, ValueError):
+            number = 1
+        return (name, number)
 
     def describe(self):
         info = self.root.find("./description/title-info")
