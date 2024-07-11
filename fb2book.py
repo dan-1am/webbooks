@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+# https://github.com/gribuser/fb2
 # https://github.com/genych/fb2-parser/
 # www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
 
@@ -8,53 +9,79 @@ import re
 import os
 
 
+class Chapter:
+    def __init__(self, label):
+        self.title = ""
+        self.label = label
+        self.number = ""
+        self.children = []
+
+    def named(self):
+        return self.title
+
+    def add_child(self, label):
+        child = type(self)(label)
+        last_count = 1+len(self.children)
+        child.number = (f"{self.number}.{last_count}" if self.number
+            else f"{last_count}")
+        self.children.append(child)
+        return child
+
+
 class TableOfContents:
 
-    def __init__(self):
-        self.tree = []
-        self.counts = [0]
+    line_template = "<a href='#{label}'>{number}. {title}</a><br>\n"
+    marker_template = "<div id='{label}'></div>"
 
-    def new_chapter(self):
-        self.counts[-1] += 1
-        chapter = dict(
-            title="untitled",
-            named=False,
-            level=len(self.counts),
-            label=f"toc{len(self.tree)}",
-            number=".".join( map(str, self.counts) ),
-        )
-        self.tree.append(chapter)
-        return chapter
+    def clear(self):
+        self.tree = Chapter("")
+        self.path = [self.tree]
+        self.count = 0
+
+    def __init__(self):
+        self.clear()
+
+    def last(self):
+        return self.path[-1]
 
     def marker(self, chapter):
-        return f"<div id='{chapter['label']}'></div>"
+        return self.marker_template.format(label=chapter.label)
 
-    def subsection(self):
-        chapter = self.new_chapter()
-        self.counts.append(0)
-        return self.marker(chapter)
+    def new_chapter(self):
+        last = self.last()
+        self.count += 1
+        new = last.add_child(f"toc{self.count}")
+        self.path.append(new)
+        return new
 
-    def endsection(self):
-        self.counts.pop()
+    def new_chapter_marker(self):
+        return self.marker(self.new_chapter())
 
-    def title(self, text):
-        chapter = self.tree[-1]
-        if chapter['named']:  # several <title> tags in one section
+    def end_chapter(self):
+        self.path.pop()
+
+    def add_title(self, text):
+        chapter = self.last()
+        if chapter.named():  # several <title> tags in one section
+            self.end_chapter()
             chapter = self.new_chapter()
             marker = self.marker(chapter)
         else:
             marker = ""
-        chapter['title'] = text
-        chapter['named'] = True
+        chapter.title = text
         return marker
 
-    def html(self):
-        parts = []
-        for ch in self.tree:
-            label = ch['label']
-            parts.append(f"<a href='#{label}'>{ch['number']}. {ch['title']}</a><br>\n")
+    def html(self, chapter=None, parts=None):
+        if chapter is None:
+            chapter = self.tree
+        if parts is None:
+            parts = []
+        for child in chapter.children:
+            line = self.line_template.format(label=child.label,
+                number=child.number, title=child.title)
+            parts.append(line)
+            self.html(child, parts)
         return "".join(parts)
-
 
 
 class FB2Book:
@@ -92,6 +119,7 @@ class FB2Book:
         else:
             self.root = ET.parse(file).getroot()
         self.strip_namespaces()
+        self.toc = TableOfContents()
 
 # it is possible to omit ns stripping - {*} is any namespace since python 3.8
 # tree.findall(".//{*}description")
@@ -132,11 +160,16 @@ class FB2Book:
 
     def describe(self):
         info = self.root.find("./description/title-info")
-        data = dict( date = info.findtext('date'), title = info.findtext("book-title") )
-        for k,v in data.items():
-            setattr(self, k, v and v.strip())
+        data = dict(date='date', title="book-title")
+        for name,tag in data.items():
+            value = info.findtext(tag)
+            if value:
+                value = value.strip()
+            else:
+                value = ""
+            setattr(self, name, value)
         self.authors = self.get_authors(info)
-        self.genres = [g.text.strip() for g in info.findall("genre") if g.text is not None]
+        self.genres = [g.text.strip() for g in info.findall("genre") if g.text]
         self.sequence, self.sequence_number = self.get_sequence_info(info)
         self.annotation = self.get_annotation(info)
 
@@ -193,19 +226,19 @@ class FB2Book:
         parts.append(template[0])
         is_section = tag in ("body","section")
         if is_section:
-            parts.append( self.toc.subsection() )
+            parts.append( self.toc.new_chapter_marker() )
         elif tag == "title":
             text = "".join( self.html_inside(tree) )
             text = re.sub(r'<[^<]+?>', '', text)
-            parts.append( self.toc.title(text) )
+            parts.append( self.toc.add_title(text) )
         self.html_inside(tree, parts)
         parts.append( template[1] )
         if is_section:
-            self.toc.endsection()
+            self.toc.end_chapter()
         return parts
 
     def html(self):
-        self.toc = TableOfContents()
+        self.toc.clear()
         parts = self.html_coverpage()
         for body in self.root.findall('body'):
             self.html_tag(body, parts)

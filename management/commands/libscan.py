@@ -36,7 +36,7 @@ def scanfb2(file, output):
         asort = ["Unknown"]
     authors = [Author.objects.get_or_create(name=n)[0] for n in asort]
     fields = ('date','annotation')
-    data = {f: getattr(fb2, f, None) or "" for f in fields }
+    data = {f: getattr(fb2, f, "") for f in fields}
     data['file'] = file;
     data['hash'] = filehash;
     if fb2.sequence:
