@@ -16,6 +16,10 @@ class Chapter:
         self.number = ""
         self.children = []
 
+    def __repr__(self):
+        number = self.number if self.number else "root"
+        return f"<{self.__class__.__name__}_{number}>"
+
     def named(self):
         return self.title
 
