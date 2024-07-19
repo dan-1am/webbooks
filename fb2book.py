@@ -162,16 +162,18 @@ class FB2Book:
             number = 1
         return (name, number)
 
-    def describe(self):
-        info = self.root.find("./description/title-info")
-        data = dict(date='date', title="book-title")
-        for name,tag in data.items():
+    def get_values(self, info, **tags):
+        for name,tag in tags.items():
             value = info.findtext(tag)
             if value:
                 value = value.strip()
             else:
                 value = ""
             setattr(self, name, value)
+
+    def describe(self):
+        info = self.root.find("./description/title-info")
+        self.get_values(info, date='date', title="book-title")
         self.authors = self.get_authors(info)
         self.genres = [g.text.strip() for g in info.findall("genre") if g.text]
         self.sequence, self.sequence_number = self.get_sequence_info(info)
