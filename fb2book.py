@@ -36,7 +36,7 @@ class TableOfContents:
     def clear(self):
         self.tree = Chapter("")
         self.path = [self.tree]
-        self.count = 0
+        self.total = 0
 
     def __init__(self):
         self.clear()
@@ -49,8 +49,8 @@ class TableOfContents:
 
     def new_chapter(self):
         last = self.last()
-        self.count += 1
-        new = last.add_child(f"toc{self.count}")
+        self.total += 1
+        new = last.add_child(f"toc{self.total}")
         self.path.append(new)
         return new
 
