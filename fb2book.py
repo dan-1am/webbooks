@@ -179,35 +179,43 @@ class FB2Book:
         self.sequence, self.sequence_number = self.get_sequence_info(info)
         self.annotation = self.get_annotation(info)
 
-    def html_picture(self, tree, parts=None):
-        if parts is None:
-            parts = []
+    def image_link(self, tree):
         for k,v in tree.attrib.items():
             if k.endswith("href"):
-                link = v
-                break
+                return v
+
+    def image_data(self, link):
+        for binary in self.root.findall("binary"):
+            if binary.attrib['id'] == link:
+                content_type = binary.attrib.get("content-type", "image/jpg")
+                return binary.text, content_type
+        return None, None
+
+    def embed_image(self, link, parts):
+        data, content_type  = self.image_data(link[1:])
+        if data:
+            parts.extend(['<img src="data:', content_type,';base64, ', data, '">\n' ])
         else:
+            parts.append(f"<p>Missing image: {link}</p>")
+
+    def html_image(self, tree, parts=None):
+        if parts is None:
+            parts = []
+        link = self.image_link(tree)
+        if not link:
             return parts
         if link[0] != "#":
             parts.append(f'<img src="{link}">\n')
             return parts
-        link = link[1:]
-        for binary in self.root.findall("binary"):
-            if binary.attrib['id'] == link:
-                content_type = binary.attrib.get("content-type","text/plain")
-                parts.extend(['<img src="data:', content_type,';base64, ', binary.text, '">\n' ])
-                return parts
-        parts.append(f"<p>Missing image: {link}</p>")
+        self.embed_image(link, parts)
         return parts
-#      <image l:href="#cover.jpg"/>
-#  <binary id="cover.jpg" content-type="image/jpeg">/9j/4AAQSkZJRgABAQAAAQABAAD/wAARCARgArwDASIAAhEBAxEB/9sAQwALCAgKCAcLCgkK
 
     def html_coverpage(self, parts=None):
         if parts is None:
             parts = []
         cover = self.root.find("./description/title-info/coverpage/image")
         if cover is not None:
-            self.html_picture(cover, parts)
+            self.html_image(cover, parts)
         return parts
 
     def html_inside(self, tree, parts=None):
@@ -226,7 +234,7 @@ class FB2Book:
             parts = []
         tag = tree.tag
         if tag == "image":
-            self.html_picture(tree, parts)
+            self.html_image(tree, parts)
             return parts
         template = self.htmlmap.get(tag, None) or (f"[Unknown: {tag}]", "[Unknown end]")
         parts.append(template[0])
