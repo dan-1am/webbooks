@@ -229,26 +229,34 @@ class FB2Book:
                 parts.append(child.tail)
         return parts
 
-    def html_tag(self, tree, parts=None):
-        if parts is None:
-            parts = []
+    def tree_as_text(self, tree):
+        text = "".join( self.html_inside(tree) )
+        text = re.sub(r'<[^<]+?>', '', text)
+        return text
+
+    def text_tag(self, tree, parts):
         tag = tree.tag
-        if tag == "image":
-            self.html_image(tree, parts)
-            return parts
-        template = self.htmlmap.get(tag, None) or (f"[Unknown: {tag}]", "[Unknown end]")
-        parts.append(template[0])
         is_section = tag in ("body","section")
         if is_section:
             parts.append( self.toc.new_chapter_marker() )
         elif tag == "title":
-            text = "".join( self.html_inside(tree) )
-            text = re.sub(r'<[^<]+?>', '', text)
-            parts.append( self.toc.add_title(text) )
+            marker = self.toc.add_title( self.tree_as_text(tree) )
+            parts.append(marker)
         self.html_inside(tree, parts)
-        parts.append( template[1] )
         if is_section:
             self.toc.end_chapter()
+
+    def html_tag(self, tree, parts=None):
+        if parts is None:
+            parts = []
+        tag = tree.tag
+        template = self.htmlmap.get(tag, None) or (f"[Unknown: {tag}]", "[Unknown end]")
+        parts.append(template[0])
+        if tag == "image":
+            self.html_image(tree, parts)
+        else:
+            self.text_tag(tree, parts)
+        parts.append( template[1] )
         return parts
 
     def html(self):
