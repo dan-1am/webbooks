@@ -173,6 +173,8 @@ class FB2Book:
 
     def describe(self):
         info = self.root.find("./description/title-info")
+        if info is None:
+            info = ET.Element("dummy")
         self.get_values(info, date='date', title="book-title")
         self.authors = self.get_authors(info)
         self.genres = [g.text.strip() for g in info.findall("genre") if g.text]
