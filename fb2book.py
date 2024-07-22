@@ -145,7 +145,7 @@ class FB2Book:
 
     def get_annotation(self, info):
         element = info.find('annotation')
-        if element:
+        if element is not None:
             return "".join( self.html_inside(element) )
         return ""
 
@@ -165,7 +165,7 @@ class FB2Book:
     def get_values(self, info, **tags):
         for name,tag in tags.items():
             value = info.findtext(tag)
-            if value:
+            if value is not None:
                 value = value.strip()
             else:
                 value = ""
