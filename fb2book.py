@@ -132,7 +132,7 @@ class FB2Book:
 
     def strip_namespaces(self):
         for element in self.root.iter():
-            element.tag = element.tag.partition('}')[-1]
+            element.tag = element.tag[element.tag.rfind('}')+1:]
 
     def author_name(self, author):
         partnames = ("last-name", "first-name", "middle-name", "nickname")
