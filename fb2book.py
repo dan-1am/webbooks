@@ -118,10 +118,10 @@ class FB2Book:
     }
 
     def __init__(self, text=None, file=None):
-        if text:
-            self.root = ET.fromstring(text)
-        else:
+        if text is None:
             self.root = ET.parse(file).getroot()
+        else:
+            self.root = ET.fromstring(text)
         self.strip_namespaces()
         self.toc = TableOfContents()
 
