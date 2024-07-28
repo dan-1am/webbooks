@@ -201,16 +201,19 @@ class FB2Book:
         else:
             parts.append(f"<p>Missing image: {link}</p>")
 
+    def external_image(self, link, parts):
+        parts.append(f'<img src="{link}">\n')
+
     def html_image(self, tree, parts=None):
         if parts is None:
             parts = []
         link = self.image_link(tree)
         if not link:
             return parts
-        if link[0] != "#":
-            parts.append(f'<img src="{link}">\n')
-            return parts
-        self.embed_image(link, parts)
+        if link[0] == "#":
+            self.embed_image(link, parts)
+        else:
+            self.external_image(link, parts)
         return parts
 
     def html_coverpage(self, parts=None):
