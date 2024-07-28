@@ -146,7 +146,7 @@ class FB2Book:
     def get_annotation(self, info):
         element = info.find('annotation')
         if element is not None:
-            return "".join( self.html_inside(element) )
+            return "".join( self.inner_to_html(element) )
         return ""
 
     def get_sequence_info(self, info):
@@ -221,19 +221,19 @@ class FB2Book:
             self.html_image(cover, parts)
         return parts
 
-    def html_inside(self, tree, parts=None):
+    def inner_to_html(self, tree, parts=None):
         if parts is None:
             parts = []
         if tree.text:
             parts.append(tree.text)
         for child in tree:
-            self.html_tag(child, parts)
+            self.tree_to_html(child, parts)
             if child.tail != None:
                 parts.append(child.tail)
         return parts
 
-    def tree_as_text(self, tree):
-        text = "".join( self.html_inside(tree) )
+    def tree_to_text(self, tree):
+        text = "".join( self.inner_to_html(tree) )
         text = re.sub(r'<[^<]+?>', '', text)
         return text
 
@@ -243,13 +243,13 @@ class FB2Book:
         if is_section:
             parts.append( self.toc.new_chapter_marker() )
         elif tag == "title":
-            marker = self.toc.add_title( self.tree_as_text(tree) )
+            marker = self.toc.add_title( self.tree_to_text(tree) )
             parts.append(marker)
-        self.html_inside(tree, parts)
+        self.inner_to_html(tree, parts)
         if is_section:
             self.toc.end_chapter()
 
-    def html_tag(self, tree, parts=None):
+    def tree_to_html(self, tree, parts=None):
         if parts is None:
             parts = []
         tag = tree.tag
@@ -262,11 +262,11 @@ class FB2Book:
         parts.append( template[1] )
         return parts
 
-    def html(self):
+    def to_html(self):
         self.toc.clear()
         parts = self.html_coverpage()
         for body in self.root.findall('body'):
-            self.html_tag(body, parts)
+            self.tree_to_html(body, parts)
         return "".join(parts)
 
     def get_toc(self):

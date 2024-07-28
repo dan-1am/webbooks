@@ -85,7 +85,7 @@ class ReadView(generic.DetailView):
         book = self.object
         context['authors'] = book_authors(book)
         fb2 = FB2Book(file=book.file)
-        html = fb2.html()
+        html = fb2.to_html()
         context['text'] = fb2.get_toc() + html
         return context
 
