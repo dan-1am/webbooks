@@ -187,6 +187,7 @@ class FB2Book:
                 return v
 
     def image_data(self, link):
+        link = link.removeprefix('#')
         for binary in self.root.findall("binary"):
             if binary.attrib['id'] == link:
                 content_type = binary.attrib.get("content-type", "image/jpg")
@@ -194,7 +195,7 @@ class FB2Book:
         return None, None
 
     def embed_image(self, link, parts):
-        data, content_type  = self.image_data(link[1:])
+        data, content_type  = self.image_data(link)
         if data:
             parts.extend(['<img src="data:', content_type,';base64, ', data, '">\n' ])
         else:
