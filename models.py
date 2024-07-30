@@ -28,11 +28,11 @@ class Sequence(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
-    authors = models.ManyToManyField(Author)
+    authors = models.ManyToManyField(Author, blank=True)
     date = models.CharField(max_length=10, blank=True)
     annotation = models.TextField(blank=True)
-    sequence = models.ForeignKey(Sequence, null=True, on_delete=models.CASCADE)
-    sequence_number = models.IntegerField(null=True)
+    sequence = models.ForeignKey(Sequence, blank=True, null=True, on_delete=models.CASCADE)
+    sequence_number = models.IntegerField(blank=True, null=True)
     genres = models.ManyToManyField(Genre, blank=True)
     file = models.CharField(max_length=512)
     hash = models.CharField(max_length=32)
