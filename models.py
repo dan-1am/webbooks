@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 
 
 class Genre(models.Model):
@@ -39,3 +39,18 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class Comment(models.Model):
+    text = models.TextField()
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    username = models.CharField(max_length=150, blank=True)
+    userid = models.IntegerField(blank=True, null=True)
+    time = models.DateTimeField(default=timezone.now)
+
+    def anchor(self):
+        return f"cmt{self.pk}"
+
+    def __str__(self):
+        return self.text

@@ -20,8 +20,32 @@
 {% endfor %}
 </p>
 <p>File: {{ book.file }}</p>
+
 <br>
 <p>Annotation</p>
 {{ book.annotation|safe }}
+
+<br>
+{% if comments %}
+<p>Comments:</p>
+{% for comment in comments %}
+<hr>
+<p class="comment-head" id="{{ comment.anchor }}">
+<span class="comment-user">{{ comment.username }}</span>
+<a class="comment-time" href="#{{ comment.anchor }}">{{ comment.time }}</a></p>
+<p class="comment-text">{{ comment.text }}</p>
+{% endfor %}
+{% else %}
+<p>No comments yet.</p>
+{% endif %}
+
+<form action="{% url "webbooks:comment" book.id %}" method="post">
+{% csrf_token %}
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    <input type="hidden" name="userid" value="{{ user.pk }}">
+    <label for="text">Comment:</label>
+    <br><textarea rows="6" cols="45" id="text" name="text"></textarea>
+    <br><input type="submit" value="Send">
+</form>
 
 {% endblock %}

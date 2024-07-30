@@ -1,6 +1,9 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.views import generic
+from django.views.decorators.http import require_POST
 from django.db.models import Count,OuterRef,Subquery
 from django.db.models.functions import Coalesce
 
@@ -73,6 +76,7 @@ class BookView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         book = self.object
         context['authors'] = book_authors(book)
+        context['comments'] = Comment.objects.filter(book=book)
         return context
 
 
@@ -90,10 +94,23 @@ class ReadView(generic.DetailView):
         return context
 
 
+@require_POST
+def post_comment(request, pk):
+    book_id = pk
+    book = get_object_or_404(Book, pk=book_id)
+    text = request.POST["text"]
+    userid = request.POST["userid"]
+    user = User.objects.get(pk=userid)
+    comment = Comment.objects.create(text=text, book=book,
+        username=user.username, userid=userid)
+    return HttpResponseRedirect(reverse("webbooks:book", args=[book_id]))
+
+
 def find_field_dupes(field):
     dupes = Book.objects.values(field).annotate(field_count=Count(field)) \
         .order_by().filter(field_count__gt=1)
     return [o[field] for o in dupes]
+
 
 class DuplicatesView(generic.ListView):
     template_name = "webbooks/book_list.html"
