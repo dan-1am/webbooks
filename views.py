@@ -103,7 +103,8 @@ def post_comment(request, pk):
     user = User.objects.get(pk=userid)
     comment = Comment.objects.create(text=text, book=book,
         username=user.username, userid=userid)
-    return HttpResponseRedirect(reverse("webbooks:book", args=[book_id]))
+    url = reverse("webbooks:book", args=[book_id])
+    return HttpResponseRedirect(f"{url}#{comment.anchor()}")
 
 
 def find_field_dupes(field):
