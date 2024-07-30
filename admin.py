@@ -1,13 +1,17 @@
 from django.contrib import admin
 
-from .models import Book,Author,Sequence,Genre
+from .models import Book,Author,Sequence,Genre,Comment
 
 class BookToAuthorInline(admin.TabularInline):
     model = Book.authors.through
     extra = 1
 
+class BookCommentsInline(admin.TabularInline):
+    model = Comment
+    extra = 1
+
 class BookAdmin(admin.ModelAdmin):
-    inlines = [BookToAuthorInline]
+    inlines = [BookToAuthorInline, BookCommentsInline]
     exclude = ["authors"]
     search_fields = ["title"]
 
