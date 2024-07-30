@@ -73,3 +73,22 @@ header p {
   padding: 40px 20px 40px;
   background-image: url('page.png');
 }
+
+.comment-head {
+  margin: 0.3em 0;
+  font-size: 1em;
+}
+
+.comment-user {
+  color: #000; background-color: #608060;
+}
+
+.comment-time {
+  color: #444;
+}
+
+.comment-text {
+  margin: 0.2em 0;
+  font-size: 1em;
+  color: #000; background-color: #707070;
+}
