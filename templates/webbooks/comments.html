@@ -1,0 +1,12 @@
+{% if comments %}
+<p>Comments:</p>
+{% for comment in comments %}
+<hr>
+<p class="comment-head" id="{{ comment.anchor }}">
+<a class="comment-user" href="{{ comment.user_link }}">{{ comment.username }}</a>
+<a class="comment-time" href="{{ comment.link }}">{{ comment.time }}</a></p>
+<p class="comment-text">{{ comment.text }}</p>
+{% endfor %}
+{% else %}
+<p>No comments yet.</p>
+{% endif %}

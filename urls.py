@@ -11,5 +11,6 @@ urlpatterns = [
     path("author<int:pk>/", views.AuthorView.as_view(), name="author"),
     path("book<int:pk>/", views.BookView.as_view(), name="book"),
     path("read<int:pk>/", views.ReadView.as_view(), name="read"),
+    path("user<int:pk>/", views.UserCommentsView.as_view(), name="user_comments"),
     path("book<int:pk>/comment", views.post_comment, name="comment"),
 ]

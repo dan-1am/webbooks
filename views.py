@@ -94,6 +94,17 @@ class ReadView(generic.DetailView):
         return context
 
 
+class UserCommentsView(generic.DetailView):
+    model = User
+    template_name = "webbooks/user_comments.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.object
+        context['comments'] = Comment.objects.filter(userid=user.pk)
+        return context
+
+
 @require_POST
 def post_comment(request, pk):
     book_id = pk

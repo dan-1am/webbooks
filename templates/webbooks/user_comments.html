@@ -1,0 +1,11 @@
+{% extends "webbooks/base.html" %}
+
+{% block title %}{{ user.username }} - user comments{% endblock %}
+{% block heading %}{{ user.username }} - user comments{% endblock %}
+
+{% block content %}
+<h1>{{ user.username }} - user comments</h1>
+
+{% include "webbooks/comments.html" %}
+
+{% endblock %}

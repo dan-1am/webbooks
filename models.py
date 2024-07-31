@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -51,6 +52,14 @@ class Comment(models.Model):
 
     def anchor(self):
         return f"cmt{self.pk}"
+
+    def link(self):
+        url = reverse("webbooks:book", args=[self.book.pk])
+        return f"{url}#{self.anchor()}"
+
+    def user_link(self):
+        url = reverse("webbooks:user_comments", args=[self.userid])
+        return f"{url}#{self.anchor()}"
 
     def __str__(self):
         return self.text
