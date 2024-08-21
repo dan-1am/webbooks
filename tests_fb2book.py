@@ -219,7 +219,9 @@ class FB2BookTest(unittest.TestCase):
     def text_in_brackets(self, text):
         parts = []
         for piece in text.split('[')[1:]:
-            found = piece.partition("]")[0]
+            found,bracket,_ = piece.partition("]")
+            if not bracket:
+                raise SyntaxError()
             parts.append(found)
         return "\n".join(parts)
 
