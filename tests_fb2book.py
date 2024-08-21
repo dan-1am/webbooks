@@ -225,6 +225,12 @@ class FB2BookTest(unittest.TestCase):
             parts.append(found)
         return "\n".join(parts)
 
+    def test_text_in_brackets(self):
+        text = "[a1]abc[b2]de\nfg[c3]hi[d4]"
+        result = self.text_in_brackets(text)
+        self.assertEqual(result, "a1\nb2\nc3\nd4")
+        self.assertRaises(SyntaxError, self.text_in_brackets, "[a1][b2[c3]")
+
     def test_tree_to_text(self):
         fb2 = self.structured_fb2
         book = FB2Book(fb2)
