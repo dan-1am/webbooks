@@ -1,6 +1,10 @@
+from pathlib import Path
+import tempfile
 import unittest
-from fb2book import Chapter,TableOfContents,FB2Book
 import xml.etree.ElementTree as ET
+import zipfile
+
+from fb2book import Chapter,TableOfContents,FB2Book
 
 
 class ChapterTest(unittest.TestCase):
@@ -133,7 +137,6 @@ class FB2BookTest(unittest.TestCase):
 </binary>
 </FictionBook>
 """
-
     def check_description(self, book):
         book.describe()
         sample = dict(
@@ -161,6 +164,15 @@ class FB2BookTest(unittest.TestCase):
         self.assertNotIn(tail, "<FictionBook")
         fb2 = "<FictionBook>\n" + tail
         book = FB2Book(fb2)
+        self.check_description(book)
+
+    def test_open_zip(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            bookname = "book.fb2"
+            zippath = Path(dirname, bookname+".zip")
+            with zipfile.ZipFile(zippath, "w") as archive:
+                archive.writestr(bookname, self.fb2)
+            book = FB2Book(file=zippath)
         self.check_description(book)
 
     def test_external_image_link(self):

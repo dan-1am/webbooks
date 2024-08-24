@@ -58,17 +58,10 @@ def scanfb2(file, output):
     book.authors.set(authors)
 
 
-#!!!todo
-def scanfb2zip(file):
-    pass
-
-
 def scan_lib_dir(output):
     for file in recurse_path( Path(settings.LIBRARY_DIR) ):
         output.write(f"File: {file}")
-        if file.name.endswith(".fb2.zip"):
-            scanfb2zip(file)
-        elif file.name.endswith(".fb2"):
+        if file.name.endswith((".fb2", ".fb2.zip")):
             scanfb2(file, output)
 
 

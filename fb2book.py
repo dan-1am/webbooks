@@ -7,6 +7,7 @@
 import xml.etree.ElementTree as ET
 import re
 import os
+import zipfile
 
 
 class Chapter:
@@ -119,11 +120,32 @@ class FB2Book:
 
     def __init__(self, text=None, file=None):
         if text is None:
-            self.root = ET.parse(file).getroot()
+            handle = self.open(file)
+            self.root = ET.parse(handle).getroot()
         else:
             self.root = ET.fromstring(text)
         self.strip_namespaces()
         self.toc = TableOfContents()
+
+    def open_zip(self, file):
+        with zipfile.ZipFile(file) as container:
+            names = container.namelist()
+            for name in names:
+                if name.endswith(".fb2"):
+                    return container.open(name)
+            raise NameError("Unable to find .fb2 file inside .fb2.zip")
+
+    def open(self, file):
+        is_file_like = all(hasattr(file, attr)
+            for attr in ('seek', 'close', 'read', 'write'))
+        if is_file_like:
+            handle = file
+        elif str(file).endswith(".fb2.zip"):
+            handle = self.open_zip(file)
+        else:
+            handle = open(file)
+        return handle
+
 
 # it is possible to omit ns stripping - {*} is any namespace since python 3.8
 # tree.findall(".//{*}description")
