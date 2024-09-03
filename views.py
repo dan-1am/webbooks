@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
@@ -116,6 +116,13 @@ def post_comment(request, pk):
         username=user.username, userid=userid)
     url = reverse("webbooks:book", args=[book_id])
     return HttpResponseRedirect(f"{url}#{comment.anchor()}")
+
+
+def download_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    handle = open(book.file, 'rb')
+    return FileResponse(handle, as_attachment=True,
+        content_type='application/fictionbook2zip')
 
 
 def find_field_dupes(field):

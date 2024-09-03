@@ -13,6 +13,7 @@
     <li>
     <p><a href="{% url 'webbooks:book' book.id %}">{{ book.title }}</a>
     {% if book.date %}({{ book.date }}){% endif %}
+    <a href="{{ book.download_url }}">[fb2]</a>
     <a href="{% url "webbooks:read" book.id%}">[Read]</a>
     </li>
 {% endfor %}

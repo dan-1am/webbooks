@@ -38,6 +38,9 @@ class Book(models.Model):
     file = models.CharField(max_length=512)
     hash = models.CharField(max_length=32)
 
+    def download_url(self):
+        return reverse("webbooks:download_book", args=[self.pk])
+
     def __str__(self):
         return self.title
 

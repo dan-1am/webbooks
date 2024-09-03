@@ -5,6 +5,7 @@
 
 {% block content %}
 <h1>{{ book.title }}
+<a href="{{ book.download_url }}">[fb2]</a>
 <a href="{% url "webbooks:read" book.id%}">[Read]</a>
 </h1>
 <p>
