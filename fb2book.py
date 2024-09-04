@@ -143,7 +143,7 @@ class FB2Book:
         elif str(file).endswith(".fb2.zip"):
             handle = self.open_zip(file)
         else:
-            handle = open(file)
+            handle = open(file, "rb")
         return handle
 
 
