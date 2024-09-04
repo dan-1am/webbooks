@@ -1,3 +1,5 @@
+from pathlib import Path
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -37,6 +39,9 @@ class Book(models.Model):
     genres = models.ManyToManyField(Genre, blank=True)
     file = models.CharField(max_length=512)
     hash = models.CharField(max_length=32)
+
+    def full_path(self):
+        return Path(settings.LIBRARY_DIR, self.file)
 
     def download_url(self):
         return reverse("webbooks:download_book", args=[self.pk])

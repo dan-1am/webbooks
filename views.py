@@ -88,7 +88,7 @@ class ReadView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         book = self.object
         context['authors'] = book_authors(book)
-        fb2 = FB2Book(file=book.file)
+        fb2 = FB2Book(file=book.full_path())
         html = fb2.to_html()
         context['text'] = fb2.get_toc() + html
         return context
@@ -120,7 +120,7 @@ def post_comment(request, pk):
 
 def download_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
-    handle = open(book.file, 'rb')
+    handle = open(book.full_path(), 'rb')
     return FileResponse(handle, as_attachment=True,
         content_type='application/fictionbook2zip')
 

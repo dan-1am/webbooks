@@ -22,13 +22,14 @@ def recurse_path(path):
             yield file
 
 
-def scanfb2(file, output):
-    records = list( Book.objects.filter(file=file) )
-    filehash = md5( file.read_bytes() ).hexdigest()
+def scanfb2(full_path, output):
+    book_path = Path(full_path).relative_to(settings.LIBRARY_DIR)
+    records = list( Book.objects.filter(file=book_path) )
+    filehash = md5( full_path.read_bytes() ).hexdigest()
     if records and records[0].hash == filehash:
-        output.write(f"Exists: {file}")
+        output.write(f"Exists: {book_path}")
         return
-    fb2 = FB2Book(file=file)
+    fb2 = FB2Book(file=full_path)
     fb2.describe()
     if fb2.authors:
         asort = sorted(fb2.authors)
@@ -37,7 +38,7 @@ def scanfb2(file, output):
     authors = [Author.objects.get_or_create(name=n)[0] for n in asort]
     fields = ('date','annotation')
     data = {f: getattr(fb2, f, "") for f in fields}
-    data['file'] = file;
+    data['file'] = book_path;
     data['hash'] = filehash;
     if fb2.sequence:
         data['sequence'] = Sequence.objects.get_or_create(name=fb2.sequence)[0]
@@ -66,10 +67,10 @@ def scan_lib_dir(output):
 
 
 def clear_missing(output):
-    for book in Book.objects.values("pk", "file"):
-        if not Path(book["file"]).exists():
-            output.write(f"Deleting {book['file']}")
-            Book.objects.filter(pk=book["pk"]).delete()
+    for book in Book.objects.all():
+        if not book.full_path().exists():
+            output.write(f"Deleting {book.file}")
+            book.delete()
 
 
 def stopwatch(start=None):
