@@ -296,8 +296,3 @@ class FB2Book:
 
     def get_toc(self):
         return self.toc.html()
-
-
-if __name__ == '__main__':
-    name="example.fb2"
-    FB2Book(file=name).describe()
