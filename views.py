@@ -118,11 +118,20 @@ def post_comment(request, pk):
     return HttpResponseRedirect(f"{url}#{comment.anchor()}")
 
 
+def book_mimetype(path):
+    suffix = Path(path).suffix
+    if suffix == ".zip":
+        return "application/x-zip-compressed-fb2"
+    elif suffix == ".fb2":
+        return "application/x-fictionbook+xml"
+    raise TypeError("Unknown book extension.")
+
+
 def download_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
     handle = open(book.full_path(), 'rb')
     return FileResponse(handle, as_attachment=True,
-        content_type='application/fictionbook2zip')
+        content_type=book_mimetype(book.full_path()))
 
 
 def find_field_dupes(field):
