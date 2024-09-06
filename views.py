@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import render, get_object_or_404
@@ -132,6 +133,28 @@ def download_book(request, pk):
     handle = open(book.full_path(), 'rb')
     return FileResponse(handle, as_attachment=True,
         content_type=book_mimetype(book.full_path()))
+
+
+def save_uploaded_book(uploaded_file):
+    upload_dir = Path(settings.LIBRARY_DIR)
+    book_path = upload_dir / uploaded_file.name
+    with open(book_path, "wb") as f:
+        for chunk in uploaded_file.chunks():
+            f.write(chunk)
+
+
+def upload_book(request):
+    context = {}
+    if request.method == "POST":
+        file = request.FILES.get("book_file", None)
+        if file:
+            save_uploaded_book(file)
+            return HttpResponseRedirect("/")
+        else:
+            context["error_message"] = "No file uploaded"
+    else:
+        pass
+    return render(request, "webbooks/upload_book.html", context)
 
 
 def find_field_dupes(field):

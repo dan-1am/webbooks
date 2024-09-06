@@ -14,4 +14,5 @@ urlpatterns = [
     path("user<int:pk>/", views.UserCommentsView.as_view(), name="user_comments"),
     path("book<int:pk>/comment", views.post_comment, name="comment"),
     path("book<int:pk>/download", views.download_book, name="download_book"),
+    path("upload_book", views.upload_book, name="upload_book"),
 ]
