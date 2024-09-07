@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import render, get_object_or_404
@@ -8,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Count,OuterRef,Subquery
 from django.db.models.functions import Coalesce
 
+from . import conf
 from .models import *
 from .fb2book import FB2Book
 
@@ -136,7 +136,7 @@ def download_book(request, pk):
 
 
 def save_uploaded_book(uploaded_file):
-    upload_dir = Path(settings.WEBBOOKS_ROOT)
+    upload_dir = Path(conf.WEBBOOKS_ROOT)
     book_path = upload_dir / uploaded_file.name
     with open(book_path, "wb") as f:
         for chunk in uploaded_file.chunks():

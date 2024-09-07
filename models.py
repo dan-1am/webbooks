@@ -1,8 +1,9 @@
 from pathlib import Path
-from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+
+from . import conf
 
 
 class Genre(models.Model):
@@ -41,7 +42,7 @@ class Book(models.Model):
     hash = models.CharField(max_length=32)
 
     def full_path(self):
-        return Path(settings.WEBBOOKS_ROOT, self.file)
+        return Path(conf.WEBBOOKS_ROOT, self.file)
 
     def download_url(self):
         return reverse("webbooks:download_book", args=[self.pk])
