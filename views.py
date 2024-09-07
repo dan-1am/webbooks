@@ -136,7 +136,8 @@ def download_book(request, pk):
 
 
 def save_uploaded_book(uploaded_file):
-    upload_dir = Path(conf.WEBBOOKS_ROOT)
+    upload_dir = Path(conf.WEBBOOKS_UPLOAD)
+    upload_dir.mkdir(parents=True, exist_ok=True)
     book_path = upload_dir / uploaded_file.name
     with open(book_path, "wb") as f:
         for chunk in uploaded_file.chunks():
