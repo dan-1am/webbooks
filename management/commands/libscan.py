@@ -23,7 +23,7 @@ def recurse_path(path):
 
 
 def scanfb2(full_path, output):
-    book_path = Path(full_path).relative_to(settings.LIBRARY_DIR)
+    book_path = Path(full_path).relative_to(settings.WEBBOOKS_ROOT)
     records = list( Book.objects.filter(file=book_path) )
     filehash = md5( full_path.read_bytes() ).hexdigest()
     if records and records[0].hash == filehash:
@@ -60,7 +60,7 @@ def scanfb2(full_path, output):
 
 
 def scan_lib_dir(output):
-    for file in recurse_path( Path(settings.LIBRARY_DIR) ):
+    for file in recurse_path( Path(settings.WEBBOOKS_ROOT) ):
         output.write(f"File: {file}")
         if file.name.endswith((".fb2", ".fb2.zip")):
             scanfb2(file, output)
@@ -86,7 +86,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         start = stopwatch()
-        self.stdout.write(f"Searching new books in {settings.LIBRARY_DIR}")
+        self.stdout.write(f"Searching new books in {settings.WEBBOOKS_ROOT}")
         scan_lib_dir(self.stdout)
         self.stdout.write(f"Clear missing books")
         clear_missing(self.stdout)

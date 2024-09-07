@@ -41,7 +41,7 @@ class Book(models.Model):
     hash = models.CharField(max_length=32)
 
     def full_path(self):
-        return Path(settings.LIBRARY_DIR, self.file)
+        return Path(settings.WEBBOOKS_ROOT, self.file)
 
     def download_url(self):
         return reverse("webbooks:download_book", args=[self.pk])
