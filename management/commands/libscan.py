@@ -86,8 +86,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         start = stopwatch()
-        self.stdout.write(f"Searching new books in {conf.WEBBOOKS_ROOT}")
-        scan_lib_dir(self.stdout)
         self.stdout.write(f"Clear missing books")
         clear_missing(self.stdout)
+        self.stdout.write(f"Searching new books in {conf.WEBBOOKS_ROOT}")
+        scan_lib_dir(self.stdout)
         stopwatch(start)
