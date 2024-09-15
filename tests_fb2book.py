@@ -4,7 +4,7 @@ import unittest
 import xml.etree.ElementTree as ET
 import zipfile
 
-from fb2book import Chapter,TableOfContents,FB2Book
+from .fb2book import Chapter,TableOfContents,FB2Book
 
 
 class ChapterTest(unittest.TestCase):
