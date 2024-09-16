@@ -1,17 +1,14 @@
-from hashlib import md5
 from pathlib import Path
 import time
 from django.core.management.base import BaseCommand, CommandError
 
 import webbooks.conf
 from webbooks.models import *
-from webbooks.fb2book import FB2Book
+from webbooks.services import inspect_book
 
 
-#    try:
-#        poll = Poll.objects.get(pk=poll_id)
-#    except Poll.DoesNotExist:
-#        raise CommandError('Poll "%s" does not exist' % poll_id)
+
+#raise CommandError('Poll "%s" does not exist' % poll_id)
 
 
 def recurse_path(path):
@@ -22,48 +19,17 @@ def recurse_path(path):
             yield file
 
 
-def scanfb2(full_path, output):
-    book_path = Path(full_path).relative_to(conf.WEBBOOKS_ROOT)
-    records = list( Book.objects.filter(file=book_path) )
-    filehash = md5( full_path.read_bytes() ).hexdigest()
-    if records and records[0].hash == filehash:
-        output.write(f"Exists: {book_path}")
-        return
-    fb2 = FB2Book(file=full_path)
-    fb2.describe()
-    if fb2.authors:
-        asort = sorted(fb2.authors)
-    else:
-        asort = ["Unknown"]
-    authors = [Author.objects.get_or_create(name=n)[0] for n in asort]
-    fields = ('date','annotation')
-    data = {f: getattr(fb2, f, "") for f in fields}
-    data['file'] = book_path;
-    data['hash'] = filehash;
-    if fb2.sequence:
-        data['sequence'] = Sequence.objects.get_or_create(name=fb2.sequence)[0]
-    else:
-        data['sequence'] = None
-    data['sequence_number'] = fb2.sequence_number
-    if not records:
-        book = Book.objects.create(title=fb2.title, **data)
-        output.write(f"Added: {fb2.title}")
-    else:
-        book = records[0]
-        output.write(f"Exists: {fb2.title}")
-        for k,v in data:
-            setattr(book, k, v)
-    if fb2.genres:
-        genres = [Genre.objects.get_or_create(name=n)[0] for n in fb2.genres]
-        book.genres.set(genres)
-    book.authors.set(authors)
-
-
 def scan_lib_dir(output):
     for file in recurse_path( Path(conf.WEBBOOKS_ROOT) ):
-        output.write(f"File: {file}")
-        if file.name.endswith((".fb2", ".fb2.zip")):
-            scanfb2(file, output)
+        try:
+            if file.name.endswith((".fb2", ".fb2.zip")):
+                book, action = inspect_book(file)
+        except:
+            output.write(f"error: {file}")
+            raise
+        else:
+            if action:
+                output.write(f"{action}: {file}")
 
 
 def clear_missing(output):
