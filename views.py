@@ -8,8 +8,9 @@ from django.db.models import Count,OuterRef,Subquery
 from django.db.models.functions import Coalesce
 
 from . import conf
-from .models import *
 from .fb2book import FB2Book
+from .models import *
+from .services import inspect_book
 
 
 #def index(request):
@@ -138,10 +139,18 @@ def download_book(request, pk):
 def save_uploaded_book(uploaded_file):
     upload_dir = Path(conf.WEBBOOKS_UPLOAD)
     upload_dir.mkdir(parents=True, exist_ok=True)
-    book_path = upload_dir / uploaded_file.name
-    with open(book_path, "wb") as f:
+    full_path = upload_dir / uploaded_file.name
+    with open(full_path, "wb") as f:
         for chunk in uploaded_file.chunks():
             f.write(chunk)
+    return full_path
+
+
+def handle_uploaded_book(file):
+    full_path = save_uploaded_book(file)
+    book, _ = inspect_book(full_path)
+    url = reverse("webbooks:book", args=[book.id])
+    return HttpResponseRedirect(url)
 
 
 def upload_book(request):
@@ -149,12 +158,8 @@ def upload_book(request):
     if request.method == "POST":
         file = request.FILES.get("book_file", None)
         if file:
-            save_uploaded_book(file)
-            return HttpResponseRedirect("/")
-        else:
-            context["error_message"] = "No file uploaded"
-    else:
-        pass
+            return handle_uploaded_book(file)
+        context["error_message"] = "No file uploaded"
     return render(request, "webbooks/upload_book.html", context)
 
 
