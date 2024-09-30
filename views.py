@@ -10,7 +10,7 @@ from django.db.models.functions import Coalesce
 from . import conf
 from .fb2book import FB2Book
 from .models import *
-from .services import inspect_book
+from .services import file_hash,inspect_book
 
 
 #def index(request):
@@ -136,6 +136,11 @@ def download_book(request, pk):
         content_type=book_mimetype(book.full_path()))
 
 
+class BookExistsView(generic.DetailView):
+    model = Book
+    template_name = "webbooks/book_exists.html"
+
+
 def save_uploaded_book(uploaded_file):
     upload_dir = Path(conf.WEBBOOKS_UPLOAD)
     upload_dir.mkdir(parents=True, exist_ok=True)
@@ -148,6 +153,12 @@ def save_uploaded_book(uploaded_file):
 
 def handle_uploaded_book(file):
     full_path = save_uploaded_book(file)
+    hash = file_hash(full_path)
+    found = Book.objects.filter(hash=hash)[:1]
+    if found:
+        book = found[0]
+        url = reverse("webbooks:book_exists", args=[book.id])
+        return HttpResponseRedirect(url)
     book, _ = inspect_book(full_path)
     url = reverse("webbooks:book", args=[book.id])
     return HttpResponseRedirect(url)

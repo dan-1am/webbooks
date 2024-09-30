@@ -1,0 +1,13 @@
+{% extends "webbooks/base.html" %}
+
+{% block title %}Upload failed{% endblock %}
+{% block heading %}Upload failed{% endblock %}
+
+{% block content %}
+<h1>Upload failed - book already exists</h1>
+<p>
+<a href="{% url "webbooks:book" book.id %}">
+{{ book.title }}
+</a>
+</p>
+{% endblock %}

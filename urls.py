@@ -15,4 +15,5 @@ urlpatterns = [
     path("book<int:pk>/comment", views.post_comment, name="comment"),
     path("book<int:pk>/download", views.download_book, name="download_book"),
     path("upload_book", views.upload_book, name="upload_book"),
+    path("book_exists<int:pk>", views.BookExistsView.as_view(), name="book_exists"),
 ]
