@@ -63,6 +63,7 @@ class AuthorView(generic.DetailView):
 
 
 def book_authors(book):
+    """ Correctly get book authors with book count. """
     # This gives wrong book_count:
     #authors = book.authors.all().annotate(book_count=Count("book"))
     ids = book.authors.values("id")
