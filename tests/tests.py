@@ -2,10 +2,10 @@ from pathlib import Path
 import tempfile
 from django.test import TestCase
 
-from . import conf
-from .fb2book import FB2Book
-from .models import *
-from .services import *
+from webbooks import conf
+from webbooks.fb2book import FB2Book
+from webbooks.models import *
+from webbooks.services import *
 
 
 def temp_file(content, mode="w+b"):
