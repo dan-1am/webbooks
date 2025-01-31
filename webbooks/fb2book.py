@@ -56,9 +56,8 @@ class TableOfContents:
         return self.marker_template.format(label=chapter.label)
 
     def new_chapter(self):
-        last = self.last()
         self.total += 1
-        new = last.add_child(f"toc{self.total}")
+        new = self.last().add_child(f"toc{self.total}")
         self.path.append(new)
         return new
 

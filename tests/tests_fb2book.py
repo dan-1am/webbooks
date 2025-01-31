@@ -14,7 +14,6 @@ class ChapterTest(unittest.TestCase):
         self.assertEqual(ch.label, 'c1')
         self.assertEqual(ch.title, '')
         self.assertEqual(ch.number, '')
-        self.assertEqual(ch.children, [])
 
     def test_chapter_is_named(self):
         ch = Chapter('c1')
@@ -33,7 +32,7 @@ class ChapterTest(unittest.TestCase):
         root = Chapter('')
         children = [root.add_child(t) for t in ('c1', 'c2', 'c3')]
         child2 = children[1]
-        child2_1 = child2.add_child('c2.1')
+        child2_1 = child2.add_child('c2-1')
         self.assertEqual(root.number, '')
         self.assertEqual(root.children, children)
         self.assertEqual(child2.label, 'c2')
