@@ -18,9 +18,16 @@ class ChapterTest(unittest.TestCase):
 
     def test_chapter_is_named(self):
         ch = Chapter('c1')
-        self.assertFalse(ch.named())
+        self.assertFalse(ch.is_named())
         ch.title = 'The Title'
-        self.assertTrue(ch.named())
+        self.assertTrue(ch.is_named())
+
+    def test_new_child_number(self):
+        root = Chapter('r')
+        self.assertEqual(root.new_child_number(), "1")
+        child = root.add_child('c1')
+        child.add_child('c1-1')
+        self.assertEqual(child.new_child_number(), "1.2")
 
     def test_chapters_tree(self):
         root = Chapter('')

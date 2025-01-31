@@ -21,14 +21,17 @@ class Chapter:
         number = self.number if self.number else "root"
         return f"<{self.__class__.__name__}_{number}>"
 
-    def named(self):
-        return self.title
+    def is_named(self):
+        return bool(self.title)
+
+    def new_child_number(self):
+        next_number = 1+len(self.children)
+        return (f"{self.number}.{next_number}" if self.number
+            else f"{next_number}")
 
     def add_child(self, label):
         child = type(self)(label)
-        last_count = 1+len(self.children)
-        child.number = (f"{self.number}.{last_count}" if self.number
-            else f"{last_count}")
+        child.number = self.new_child_number()
         self.children.append(child)
         return child
 
@@ -67,7 +70,7 @@ class TableOfContents:
 
     def add_title(self, text):
         chapter = self.last()
-        if chapter.named():  # several <title> tags in one section
+        if chapter.is_named():  # several <title> tags in one section
             self.end_chapter()
             chapter = self.new_chapter()
             marker = self.marker(chapter)
