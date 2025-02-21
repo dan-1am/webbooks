@@ -117,6 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / '../static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -124,5 +125,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # fb2 books location
-WEBBOOKS_ROOT = "/home/oda/git/odahome_books"
+WEBBOOKS_ROOT = "/home/oda/git/odahome/books"
 WEBBOOKS_UPLOAD = WEBBOOKS_ROOT+"/_upload"

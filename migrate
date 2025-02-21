@@ -1,0 +1,20 @@
+#!/bin/sh
+
+
+#DJANGO_SUPERUSER_PASSWORD=mypass python manage.py createsuperuser --noinput --username USERNAME
+if [ $# -gt 0 ]; then
+    if [ "$1" = "-c" ]; then
+        echo "Clearing old migrations..."
+        rm -rf ./webbooks/migrations
+    fi
+fi
+
+echo "#### Making migrations"
+python manage.py makemigrations
+python manage.py makemigrations webbooks
+
+echo "#### Migrate"
+python manage.py migrate
+
+echo "#### Migrate webbooksdb"
+#python manage.py migrate --database=webbooksdb

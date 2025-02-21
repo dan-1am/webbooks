@@ -3,5 +3,5 @@
 *.swp
 *.state
 **/*.png
-/migrations
-todo.txt
+migrations/
+*.sqlite3
