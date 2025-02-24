@@ -17,10 +17,17 @@ class LibraryTest(unittest.TestCase):
     def testLibrary(self):
         self.browser.get("http://localhost:8001")
         self.assertIn("Library", self.browser.title)
-        sleep(1)
         link = self.browser.find_element(By.LINK_TEXT, 'Authors list')
         link.click()
-        sleep(3)
+
+        self.assertIn("Authors", self.browser.title)
+        authors = self.browser.find_element(By.ID, 'author_list')
+        first_author = authors.find_element(By.TAG_NAME, 'a')
+        first_author.click()
+
+        link = self.browser.find_element(By.LINK_TEXT, '[Read]')
+        link.click()
+#        sleep(1)
 
 if __name__ == "__main__":
     unittest.main()

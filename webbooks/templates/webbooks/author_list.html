@@ -6,7 +6,7 @@
 {% block content %}
 {% if author_list %}
     <p>{{ author_list.count }} total.</p>
-    <ul>
+    <ul id="author_list">
     {% for author in author_list %}
         <li>
         <a href="{% url 'webbooks:author' author.id %}">{{ author.name }}</a>
