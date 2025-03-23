@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import views,apiviews
 
 app_name = 'webbooks'
 
@@ -16,4 +16,5 @@ urlpatterns = [
     path("book<int:pk>/download", views.download_book, name="download_book"),
     path("upload_book", views.upload_book, name="upload_book"),
     path("book_exists<int:pk>", views.BookExistsView.as_view(), name="book_exists"),
+    path("api/books", apiviews.book_list, name="api_book_list"),
 ]
