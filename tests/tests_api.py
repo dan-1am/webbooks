@@ -9,7 +9,7 @@ from webbooks.models import Book
 
 class WebbooksAPITest(TestCase):
 
-    book_list_url = reverse("webbooks:api_book_list")
+    book_list_url = reverse("webbooks:api-book-list")
 
     def create_books(self, count):
         return [

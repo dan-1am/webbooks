@@ -4,15 +4,15 @@ from rest_framework import serializers
 from webbooks.models import Genre,Author,Sequence,Book,Comment
 
 
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = ['id', 'name']
-
-
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
+        fields = ['id', 'name']
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
         fields = ['id', 'name']
 
 
@@ -25,7 +25,7 @@ class SequenceSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors']
+        fields = ['id', 'title', 'authors', 'date', 'annotation', 'sequence']
 
 """    title = models.CharField(max_length=200)
     authors = models.ManyToManyField(Author, blank=True)

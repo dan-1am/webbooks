@@ -1,22 +1,24 @@
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
+from rest_framework import viewsets
 
-from webbooks.models import Book
-from webbooks.serializers import BookSerializer
+import webbooks.models as m
+import webbooks.serializers as s
 
 
 
-@csrf_exempt
-def book_list(request):
-    if request.method == 'GET':
-        books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = BookSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+class AuthorViewSet(viewsets.ModelViewSet):
+    queryset = m.Author.objects.all()
+    serializer_class = s.AuthorSerializer
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = m.Genre.objects.all()
+    serializer_class = s.GenreSerializer
+
+class SequenceViewSet(viewsets.ModelViewSet):
+    queryset = m.Sequence.objects.all()
+    serializer_class = s.SequenceSerializer
+
+class BookViewSet(viewsets.ModelViewSet):
+    queryset = m.Book.objects.all()
+    serializer_class = s.BookSerializer
+
+
