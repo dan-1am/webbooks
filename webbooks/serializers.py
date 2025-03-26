@@ -26,6 +26,7 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ['id', 'title', 'authors', 'date', 'annotation', 'sequence']
+        depth = 1
 
 """    title = models.CharField(max_length=200)
     authors = models.ManyToManyField(Author, blank=True)
