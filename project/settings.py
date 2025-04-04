@@ -125,6 +125,15 @@ STATIC_ROOT = BASE_DIR / '../statictest/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
+}
+
+
+
 # fb2 books location
 WEBBOOKS_ROOT = "/home/oda/git/odahome/books"
 WEBBOOKS_UPLOAD = WEBBOOKS_ROOT+"/_upload"
