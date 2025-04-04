@@ -9,13 +9,19 @@ from webbooks.models import Book
 
 class WebbooksAPITest(TestCase):
 
-    book_list_url = reverse("webbooks:api-book-list")
+    book_list_url = reverse("webbooks:book-list")
 
     def create_books(self, count):
         return [
             Book.objects.create(title="Book "+str(id))
             for id in range(count)
         ]
+
+    def test_reverse_drf_router_view(self):
+        try:
+            bookurl = reverse("webbooks:book-detail", args=[1])
+        except:
+            self.fail()
 
     def test_get_returns_json200(self):
         book1 = self.create_books(1)[0]

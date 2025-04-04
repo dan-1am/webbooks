@@ -21,4 +21,6 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = m.Book.objects.all()
     serializer_class = s.BookSerializer
 
-
+class FullBookViewSet(viewsets.ModelViewSet):
+    queryset = m.Book.objects.prefetch_related()
+    serializer_class = s.FullBookSerializer

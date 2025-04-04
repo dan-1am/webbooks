@@ -6,17 +6,14 @@ from . import views,apiviews
 
 app_name = 'webbooks'
 
-router = DefaultRouter()
-router.register("authors", apiviews.AuthorViewSet, basename="api-author")
-router.register("genres", apiviews.GenreViewSet, basename="api-genre")
-router.register("sequences", apiviews.SequenceViewSet, basename="api-sequence")
-router.register("books", apiviews.BookViewSet, basename="api-book")
-#router.register("books", apiviews.BookViewSet, basename="book")
 
-author_list = apiviews.AuthorViewSet.as_view({
-    'get': 'list',
-    'post': 'create',
-})
+router = DefaultRouter()
+router.register("authors", apiviews.AuthorViewSet)
+router.register("genres", apiviews.GenreViewSet)
+router.register("sequences", apiviews.SequenceViewSet)
+router.register("books", apiviews.BookViewSet)
+router.register("fullbooks", apiviews.FullBookViewSet, basename="fullbook")
+
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -32,4 +29,3 @@ urlpatterns = [
     path("book_exists<int:pk>", views.BookExistsView.as_view(), name="book_exists"),
     path("api/", include(router.urls)),
 ]
-
