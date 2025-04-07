@@ -6,6 +6,11 @@ from django.urls import reverse
 from webbooks.models import Book
 
 
+def remove_paginator(data):
+    if isinstance(data, dict):
+        data = data['results']
+    return data
+
 
 class WebbooksAPITest(TestCase):
 
@@ -33,6 +38,7 @@ class WebbooksAPITest(TestCase):
         created = self.create_books(2)
         response = self.client.get(self.book_list_url)
         data_list = json.loads( response.content.decode("utf8") )
+        data_list = remove_paginator(data_list)
         data_dict = {item['id']: item for item in data_list}
         for book in created:
             self.assertEqual(book.title, data_dict[book.id]['title'])
