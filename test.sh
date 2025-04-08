@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-if [ "$1" == "f" ]; then
+if [ "$1" = "f" ]; then
     python -m tests.functional_tests
 else
 #    python -m unittest tests.tests_fb2book
