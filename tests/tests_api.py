@@ -7,8 +7,8 @@ from webbooks.models import Book
 
 
 def remove_paginator(data):
-    if isinstance(data, dict):
-        data = data['results']
+    if isinstance(data, dict) and "results" in data:
+        data = data["results"]
     return data
 
 
