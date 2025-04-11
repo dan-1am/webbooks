@@ -21,6 +21,8 @@ def recurse_path(path):
 
 def scan_lib_dir(output):
     for file in recurse_path( Path(conf.WEBBOOKS_ROOT) ):
+        if file.is_relative_to(conf.WEBBOOKS_UPLOAD):
+            continue
         try:
             if file.name.endswith((".fb2", ".fb2.zip")):
                 book, action = inspect_book(file)
