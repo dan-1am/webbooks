@@ -31,7 +31,7 @@ def scan_lib_dir(output):
             raise
         else:
             if status != "exists":
-                output.write(f"{action}: {file}")
+                output.write(f"{status}: {file}")
 
 
 def clear_missing(output):
