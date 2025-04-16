@@ -114,17 +114,30 @@ class TestServices(TestCase):
         book_path = get_book_path(full_path)
         self.assertEqual(book.file, book_path)
 
-    def test_inspect_book(self):
+    def test_check_book_file(self):
         full_path = self.find_some_book()
-        book, action = inspect_book(full_path)
+        book, status = check_book_file(full_path)
         with self.subTest(key="create"):
-            self.assertEqual(action, "create")
+            self.assertEqual(status, "created")
             book_path = get_book_path(full_path)
             book_count = Book.objects.filter(file=book_path).count()
             self.assertEqual(book_count, 1)
         with self.subTest(key="update"):
             Book.objects.filter(id=book.id).update(hash="123")
-            _, action = inspect_book(full_path)
-            self.assertEqual(action, "update")
+            _, status = check_book_file(full_path)
+            self.assertEqual(status, "updated")
             hash = Book.objects.values_list("hash", flat=True).get(id=book.id)
             self.assertNotEqual(hash, "123")
+
+    def test_add_book_file(self):
+        full_path = self.find_some_book()
+        book, status = add_book_file(full_path)
+        with self.subTest(key="create"):
+            self.assertEqual(status, "created")
+            book_path = get_book_path(full_path)
+            book_count = Book.objects.filter(file=book_path).count()
+            self.assertEqual(book_count, 1)
+        with self.subTest(key="update"):
+            Book.objects.filter(id=book.id).update(hash="123")
+            _, status = add_book_file(full_path)
+            self.assertEqual(status, "exists")

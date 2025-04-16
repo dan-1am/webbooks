@@ -10,7 +10,7 @@ from django.db.models.functions import Coalesce
 from . import conf
 from .fb2book import FB2Book
 from .models import *
-from .services import file_hash,inspect_book
+from .services import file_hash,add_book_file
 
 
 #def index(request):
@@ -154,15 +154,13 @@ def save_uploaded_book(uploaded_file):
 
 def handle_uploaded_book(file):
     full_path = save_uploaded_book(file)
-    hash = file_hash(full_path)
-    found = Book.objects.filter(hash=hash)[:1]
-    if found:
-        book = found[0]
+    book, result = add_book_file(full_path)
+    if result == "created":
+        url = reverse("webbooks:book", args=[book.id])
+        return HttpResponseRedirect(url)
+    else:
         url = reverse("webbooks:book_exists", args=[book.id])
         return HttpResponseRedirect(url)
-    book, _ = inspect_book(full_path)
-    url = reverse("webbooks:book", args=[book.id])
-    return HttpResponseRedirect(url)
 
 
 def upload_book(request):

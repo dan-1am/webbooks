@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 import webbooks.conf
 from webbooks.models import *
-from webbooks.services import inspect_book
+from webbooks.services import check_book_file
 
 
 
@@ -25,12 +25,12 @@ def scan_lib_dir(output):
             continue
         try:
             if file.name.endswith((".fb2", ".fb2.zip")):
-                book, action = inspect_book(file)
+                book, status = check_book_file(file)
         except:
             output.write(f"error: {file}")
             raise
         else:
-            if action:
+            if status != "exists":
                 output.write(f"{action}: {file}")
 
 

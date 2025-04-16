@@ -15,12 +15,25 @@ def file_hash(file):
     return hasher.hexdigest()
 
 
+def get_default_path(book_path):
+    return Path(conf.WEBBOOKS_ROOT, Path(book_path).name)
+
+
 def get_book_path(full_path):
     return Path(full_path).relative_to(conf.WEBBOOKS_ROOT)
 
 
 def find_by_path(book_path, values=None):
     query = Book.objects.filter(file=book_path)
+    if values:
+        query = query.values(*values)
+    records = list( query[:1] )
+    if records:
+        return records[0]
+
+
+def find_by_hash(book_hash, values=None):
+    query = Book.objects.filter(hash=book_hash)
     if values:
         query = query.values(*values)
     records = list( query[:1] )
@@ -68,13 +81,34 @@ def add_book(full_path, hash=None, id=None):
     return book
 
 
-def inspect_book(full_path):
+def check_book_file(full_path):
+    """ Check and update if file in the library is changed. """
     hash = file_hash(full_path)
     book_path = get_book_path(full_path)
     found_book = find_by_path(book_path)
-    if found_book and found_book.hash == hash:
-        return found_book, ""
-    id = found_book.id if found_book else None
-    book = add_book(full_path, hash, id=id)
-    action = "update" if found_book else "create"
-    return book, action
+    if found_book:
+        if found_book.hash == hash:
+            return found_book, "exists"
+        # todo: Use old info as default. Maybe discard new info?
+        book = add_book(full_path, hash, id=found_book.id)
+        return book, "updated"
+    else:
+        book = add_book(full_path, hash)
+        return book, "created"
+
+
+def add_book_file(full_path):
+    """ Add uploaded file to library. """
+    hash = file_hash(full_path)
+    found_book = find_by_hash(hash)
+    if found_book:
+        return found_book, "exists"
+    new_path = get_default_path(full_path)
+    book_path = get_book_path(new_path)
+    found_book = find_by_path(book_path)
+    if found_book:
+        # todo: special page "exists but different", cancel/replace
+        return found_book, "exists"
+    Path(full_path).replace(new_path)
+    book = add_book(new_path, hash)
+    return book, "created"
