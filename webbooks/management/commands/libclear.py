@@ -12,3 +12,4 @@ class Command(BaseCommand):
         Sequence.objects.all().delete()
         Author.objects.all().delete()
         Genre.objects.all().delete()
+        Comment.objects.all().delete()
