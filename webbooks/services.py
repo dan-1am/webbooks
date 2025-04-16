@@ -92,9 +92,14 @@ def check_book_file(full_path):
         # todo: Use old info as default. Maybe discard new info?
         book = add_book(full_path, hash, id=found_book.id)
         return book, "updated"
-    else:
-        book = add_book(full_path, hash)
-        return book, "created"
+    found_book = find_by_hash(hash)
+    if found_book:
+        if not found_book.full_path().is_file():
+            found_book.file = book_path
+            found_book.save()
+            return found_book, "moved"
+    book = add_book(full_path, hash)
+    return book, "created"
 
 
 def add_book_file(full_path):
