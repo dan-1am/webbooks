@@ -2,9 +2,9 @@
 
 Online library of fb2/fb2.zip books as Django application.
 
-- Read online, download, upload, comment.
-- Author page with books, sorted by sequence.
-- Existing fb2 collection can be used directly.
+- Read online, download, upload, comment
+- Author page with books, sorted by sequence
+- Existing fb2 collection can be used directly
 
 The application currently functions at a basic level and can be utilized
 in its current state. However, to enhance the user experience, several
@@ -16,7 +16,7 @@ key features need to be implemented:
 4. Enhance the user interface and functionality of the website by
     modernizing the design and expanding its features
 5. Develop more specialized REST API
-6. Increase the test coverage.
+6. Increase the test coverage
 
 (Tasks 2 and 3 can be done in Django admin cite now, but should be
 accessible without it.)
