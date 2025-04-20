@@ -59,6 +59,30 @@ header p {
   white-space: nowrap;
 }
 
+header form button {
+  background-color: #2ea44f;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #444;
+  display: inline-block;
+  font-weight: 600;
+  line-height: 20px;
+  padding: 4px 10px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+header form button:hover {
+  background-color: #2c974b;
+}
+
 .content {
   width: 100%;
   max-width: 800px;
