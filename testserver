@@ -1,3 +1,4 @@
 #!/bin/sh
 
+python manage.py collectstatic --noinput
 urxvt -e ../venv/bin/gunicorn --bind unix:/tmp/webbooks_test_server.socket project.wsgi:application &
