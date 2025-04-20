@@ -5,8 +5,8 @@
 {% csrf_token %}
     {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
     <input type="hidden" name="userid" value="{{ user.pk }}">
-    <label for="book_file">Book file:</label>
-    <br><input type="file" id="book_file" name="book_file">
-    <br><input type="submit" value="Send">
+    <p>Select book file for upload (.fb2,.fb2.zip):</p>
+    <input type="file" id="book_file" name="book_file">
+    <br><input type="submit" value="Upload">
 </form>
 {% endblock %}
