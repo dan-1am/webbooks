@@ -12,7 +12,11 @@
   <p><a href="{% url "webbooks:index" %}">Library</a></p>
   <p>{% block heading %}Library{% endblock %}</p>
 {% if user.is_authenticated %}
-  <p>{{ user.username }} <a href="{% url "logout" %}">Log out</a></p>
+  <form id="logout-form" method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <p>{{ user.username }}
+    <button type="submit">Log out</button></p>
+  </form>
 {% else %}
   <p><a href="{% url "login" %}?next={{ request.path }}">Log in</a></p>
 {% endif %}
