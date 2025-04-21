@@ -31,7 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'webbooks.apps.WebBooksConfig',
+    'login_pages',
+    'webbooks',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
