@@ -1,4 +1,15 @@
 #!/bin/sh
 
-python manage.py collectstatic --noinput
-urxvt -e ../venv/bin/gunicorn --bind unix:/tmp/webbooks_test_server.socket project.wsgi:application &
+
+app="webbooks_test"
+venv="../venv"
+
+pidfile="/tmp/gunicorn_${app}.pid"
+socket="/tmp/${app}_server.socket"
+
+[ -e "$pidfile" ] && xargs -a "$pidfile" kill
+
+"$venv/bin/python" manage.py collectstatic --noinput
+
+urxvt -e "$venv/bin/gunicorn" --pid "$pidfile" \
+--bind unix:"$socket" project.wsgi:application &
