@@ -9,6 +9,7 @@ server {
     }
 
     location / {
+        # Django requires $host:$server_port for non-standard ports
         proxy_set_header Host $host:$server_port;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -28,6 +29,7 @@ server {
     }
 
     location / {
+        # Django requires $host:$server_port for non-standard ports
         proxy_set_header Host $host:$server_port;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
