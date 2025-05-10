@@ -3,11 +3,111 @@
 # https://github.com/gribuser/fb2
 # https://github.com/genych/fb2-parser/
 # www.fictionbook.org/index.php/Описание_формата_FB2_от_Sclex
+# http://www.fictionbook.org/index.php/Eng:XML_Schema_Fictionbook_2.1
 
 import xml.etree.ElementTree as ET
 import re
 import os
 import zipfile
+
+
+decorations = {
+"text": {
+    'toc_chapter': ("{number}. {title} [{label}]\n", ""),
+    'chapter': ("\n* * *\nChapter {number} [{label}]\n\n", "\n\n"),
+    'body': ("-"*40+"\n", ""),
+    'section': ("", ""),
+    'title': ("", "\n\n"),
+    'subtitle': ("", "\n\n"),
+    'epigraph': (" "*10, "\n"),
+    'a': ("", ""),
+    'p': ("", "\n\n"),
+    'br': ("", "\n"),
+    'table': ("\n", "\n"),
+    'tr': ("", "\n"),
+    'th': ("", "-"*72 + "\n"),
+    'td': (" ", " |"),
+    'emphasis': ("_", "_"),
+    'strong': ("*", "*"),
+    'sub':("^(", ")"),
+    'sup':("_(", ")"),
+    'strikethrough':("--(", ")--"),
+    'code':("\n", "\n"),
+    'poem': ("", ""),
+    'stanza': ("", "\n"),
+    'v': (" "*10, "\n"),
+    'cite': (" "*10, "\n"),
+    'text-author': (" "*10, "\n"),
+    'empty-line': ("-"*72, "\n"),
+},
+"html": {
+    'toc_chapter': ("<li><a href='#{label}'>{number}. {title}</a></li>\n", ""),
+    'chapter': ("<hr><h2 id='{label}'>Chapter {number}</h2>\n", "\n\n"),
+    'body': ("<hr><hr>\n", ""),
+    'section': ("", ""),
+    'title': ("<h2>", "</h2>\n"),
+    'subtitle': ("<h3>", "</h3>\n"),
+    'epigraph': ('<div style="text-align: right; font-style: italic">', "</div>\n"),
+    'a': ("", ""),
+    'p': ("<p>", "</p>\n"),
+    'br': ("<br>\n", ""),
+    'table': ('<table border="1">\n', "</table>\n"),
+    'tr': ("<tr>\n", "</tr>\n"),
+    'th': ("<th>\n", "</th>\n"),
+    'td': ("<td>", "</td>\n"),
+    'emphasis': ("<em>", "</em>"),
+    'strong': ("<strong>", "</strong>"),
+    'sub':("<sub>", "</sub>"),
+    'sup':("<sup>", "</sup>"),
+    'strikethrough':("<s>", "</s>"),
+    'code':("<pre>", "</pre>"),
+    'poem': ("", ""),
+    'stanza': ('<div style="text-align: center;"><p>\n', "</p></div>\n"),
+    'v': ("", "<br>\n"),
+    'cite': ("<cite>", "</cite>"),
+    'text-author': ('<div style="text-align: right">', "</div>"),
+    'empty-line': ("<br>", ""),
+},
+}
+
+
+class BookParser:
+
+    def __init__(self, text=None, file=None):
+        if text is None:
+            self.root = self.parse_file(file)
+        else:
+            self.root = ET.fromstring(text)
+        self.strip_namespaces()
+
+    def parse_file(self, file):
+        handle = self.open(file)
+        root = ET.parse(handle).getroot()
+        return root
+
+    def open_zip(self, file):
+        with zipfile.ZipFile(file) as container:
+            names = container.namelist()
+            for name in names:
+                if name.endswith(".fb2"):
+                    return container.open(name)
+            raise NameError("Unable to find .fb2 file inside .fb2.zip")
+
+    def open(self, file):
+        is_file_like = all(hasattr(file, attr)
+            for attr in ('seek', 'close', 'read', 'write'))
+        if is_file_like:
+            handle = file
+        elif str(file).endswith(".fb2.zip"):
+            handle = open_zip(file)
+        else:
+            handle = open(file, "rb")
+        return handle
+
+    def strip_namespaces(self):
+        """ Hack to not bother with namespaces """
+        for element in self.root.iter():
+            element.tag = element.tag[element.tag.rfind('}')+1:]
 
 
 class Chapter:
@@ -36,265 +136,203 @@ class Chapter:
         return child
 
 
-class TableOfContents:
+class TableOfChapters:
 
-    line_template = "<a href='#{label}'>{number}. {title}</a><br>\n"
-    marker_template = "<div id='{label}'></div>"
-
-    def clear(self):
+    def __init__(self, actor):
+        self.actor = actor
         self.tree = Chapter("")
         self.path = [self.tree]
         self.total = 0
 
-    def __init__(self):
-        self.clear()
-
-    def last(self):
+    def current(self):
         return self.path[-1]
 
-    def marker(self, chapter):
-        return self.marker_template.format(label=chapter.label)
-
-    def new_chapter(self):
+    def add_chapter(self):
         self.total += 1
-        new = self.last().add_child(f"toc{self.total}")
-        self.path.append(new)
-        return new
-
-    def new_chapter_marker(self):
-        return self.marker(self.new_chapter())
+        chapter = self.current().add_child(f"toc{self.total}")
+        self.path.append(chapter)
+        self.actor.add_chapter(chapter)
+        return chapter
 
     def end_chapter(self):
-        self.path.pop()
+        chapter = self.path.pop()
+        self.actor.end_chapter(chapter)
 
-    def add_title(self, text):
-        chapter = self.last()
-        if chapter.is_named():  # several <title> tags in one section
-            self.end_chapter()
-            chapter = self.new_chapter()
-            marker = self.marker(chapter)
-        else:
-            marker = ""
+    def add_chapter_title(self, text):
+        chapter = self.current()
         chapter.title = text
-        return marker
 
-    def html(self, chapter=None, parts=None):
+    def get_result(self, chapter=None):
         if chapter is None:
             chapter = self.tree
-        if parts is None:
-            parts = []
         for child in chapter.children:
-            line = self.line_template.format(label=child.label,
-                number=child.number, title=child.title)
-            parts.append(line)
-            self.html(child, parts)
-        return "".join(parts)
+            self.actor.toc_chapter(child)
+            self.get_result(child)
 
 
-class FB2Book:
-
-    htmlmap = {
-        'body': ("<hr><hr>\n", ""),
-        'section': ("<hr>\n", ""),
-        'title': ("<h2>", "</h2>\n"),
-        'subtitle': ("<h3>", "</h3>\n"),
-        'epigraph': ('<div style="text-align: right; font-style: italic">', "</div>\n"),
-        'a': ("", ""),
-        'p': ("<p>", "</p>\n"),
-        'br': ("<br>\n", ""),
-        'table': ('<table border="1">\n', "</table>\n"),
-        'tr': ("<tr>\n", "</tr>\n"),
-        'th': ("<th>\n", "</th>\n"),
-        'td': ("<td>", "</td>\n"),
-        'emphasis': ("<em>", "</em>"),
-        'strong': ("<strong>", "</strong>"),
-        'sub':("<sub>", "</sub>"),
-        'sup':("<sup>", "</sup>"),
-        'strikethrough':("<s>", "</s>"),
-        'code':("<pre>", "</pre>"),
-        'poem': ("", ""),
-        'stanza': ('<div style="text-align: center;"><p>', "</p></div>"),
-        'v': ("", "<br>"),
-        'cite': ("<cite>", "</cite>"),
-        'text-author': ('<div style="text-align: right">', "</div>"),
-        'empty-line': ("<br>", ""),
-    }
+class BookScanner:
 
     def __init__(self, text=None, file=None):
-        if text is None:
-            handle = self.open(file)
-            self.root = ET.parse(handle).getroot()
-        else:
-            self.root = ET.fromstring(text)
-        self.strip_namespaces()
-        self.toc = TableOfContents()
+        self.parser = BookParser(text, file)
 
-    def open_zip(self, file):
-        with zipfile.ZipFile(file) as container:
-            names = container.namelist()
-            for name in names:
-                if name.endswith(".fb2"):
-                    return container.open(name)
-            raise NameError("Unable to find .fb2 file inside .fb2.zip")
-
-    def open(self, file):
-        is_file_like = all(hasattr(file, attr)
-            for attr in ('seek', 'close', 'read', 'write'))
-        if is_file_like:
-            handle = file
-        elif str(file).endswith(".fb2.zip"):
-            handle = self.open_zip(file)
-        else:
-            handle = open(file, "rb")
-        return handle
-
-
-# it is possible to omit ns stripping - {*} is any namespace since python 3.8
-# tree.findall(".//{*}description")
-# or include ns separately:
-# tree.findall("xmlns:DEAL_LEVEL/xmlns:PAID_OFF", namespaces={'xmlns': 'http://www.test.com'})
-
-    def strip_namespaces(self):
-        for element in self.root.iter():
-            element.tag = element.tag[element.tag.rfind('}')+1:]
-
-    def author_name(self, author):
-        partnames = ("last-name", "first-name", "middle-name", "nickname")
-        parts = filter(None, ( author.findtext(p) for p in partnames ) )
-        name = ' '.join( (p.strip() for p in parts) )
-        return name
-
-    def get_authors(self, info):
-        return [self.author_name(a) for a in info.findall("author")]
-
-    def get_annotation(self, info):
-        element = info.find('annotation')
-        if element is not None:
-            return "".join( self.inner_to_html(element) )
-        return ""
-
-    def get_sequence_info(self, info):
-        sequence = info.find("sequence")
-        name = sequence is not None and sequence.attrib.get("name", None)
-        if not name:
-            return ("", 1)
-        name = name.strip()
-        number = sequence.attrib.get("number", None)
-        try:
-            number = int(number)
-        except (TypeError, ValueError):
-            number = 1
-        return (name, number)
-
-    def get_values(self, info, **tags):
-        for name,tag in tags.items():
-            value = info.findtext(tag)
-            if value is not None:
-                value = value.strip()
-            else:
-                value = ""
-            setattr(self, name, value)
-
-    def describe(self):
-        info = self.root.find("./description/title-info")
-        if info is None:
-            info = ET.Element("dummy")
-        self.get_values(info, date='date', title="book-title")
-        self.authors = self.get_authors(info)
-        self.genres = [g.text.strip() for g in info.findall("genre") if g.text]
-        self.sequence, self.sequence_number = self.get_sequence_info(info)
-        self.annotation = self.get_annotation(info)
-
-    def image_link(self, tree):
-        for k,v in tree.attrib.items():
-            if k.endswith("href"):
-                return v
-
-    def image_data(self, link):
-        link = link.removeprefix('#')
-        for binary in self.root.findall("binary"):
-            if binary.attrib['id'] == link:
-                content_type = binary.attrib.get("content-type", "image/jpg")
-                return binary.text, content_type
-        return None, None
-
-    def embed_image(self, link, parts):
-        data, content_type  = self.image_data(link)
-        if data:
-            parts.extend(['<img src="data:', content_type,';base64, ', data, '">\n' ])
-        else:
-            parts.append(f"<p>Missing image: {link}</p>")
-
-    def external_image(self, link, parts):
-        parts.append(f'<img src="{link}">\n')
-
-    def html_image(self, tree, parts=None):
-        if parts is None:
-            parts = []
-        link = self.image_link(tree)
-        if not link:
-            return parts
-        if link[0] == "#":
-            self.embed_image(link, parts)
-        else:
-            self.external_image(link, parts)
-        return parts
-
-    def html_coverpage(self, parts=None):
-        if parts is None:
-            parts = []
-        cover = self.root.find("./description/title-info/coverpage/image")
-        if cover is not None:
-            self.html_image(cover, parts)
-        return parts
-
-    def inner_to_html(self, tree, parts=None):
-        if parts is None:
-            parts = []
+    def scan_inner(self, tree):
         if tree.text:
-            parts.append(tree.text)
+            self.actor.add_text(tree.text)
         for child in tree:
-            self.tree_to_html(child, parts)
+            self.scan_tree(child)
             if child.tail != None:
-                parts.append(child.tail)
-        return parts
+                self.actor.add_text(child.tail)
 
-    def tree_to_text(self, tree):
-        text = "".join( self.inner_to_html(tree) )
-        text = re.sub(r'<[^<]+?>', '', text)
-        return text
+    def add_chapter_for_extra_title(self):
+        self.toc.end_chapter()
+        self.toc.add_chapter()
 
-    def text_tag(self, tree, parts):
-        tag = tree.tag
-        is_section = tag in ("body","section")
-        if is_section:
-            parts.append( self.toc.new_chapter_marker() )
-        elif tag == "title":
-            marker = self.toc.add_title( self.tree_to_text(tree) )
-            parts.append(marker)
-        self.inner_to_html(tree, parts)
-        if is_section:
+    def handle_new_title(self):
+        chapter = self.toc.current()
+        if chapter.is_named():
+            self.add_chapter_for_extra_title()
+
+    def wrap_chapter(self, tree):
+        is_chapter = tree.tag in ("body","section")
+        if is_chapter:
+            self.toc.add_chapter()
+        self.scan_inner(tree)
+        if is_chapter:
             self.toc.end_chapter()
 
-    def tree_to_html(self, tree, parts=None):
-        if parts is None:
-            parts = []
-        tag = tree.tag
-        template = self.htmlmap.get(tag, None) or (f"[Unknown: {tag}]", "[Unknown end]")
-        parts.append(template[0])
-        if tag == "image":
-            self.html_image(tree, parts)
+    def text_tag(self, tree):
+        if tree.tag == "title":
+            self.handle_new_title()
+        self.actor.add_tag(tree.tag)
+        self.wrap_chapter(tree)
+        if tree.tag == "title":
+            text = self.actor.fragments.copy_tag_text()
+            self.toc.add_chapter_title(text)
+        self.actor.end_tag(tree.tag)
+
+    def scan_tree(self, tree):
+        if tree.tag == "image":
+#            self.image(tree)
+            pass
         else:
-            self.text_tag(tree, parts)
-        parts.append( template[1] )
-        return parts
+            self.text_tag(tree)
 
-    def to_html(self):
-        self.toc.clear()
-        parts = self.html_coverpage()
-        for body in self.root.findall('body'):
-            self.tree_to_html(body, parts)
-        return "".join(parts)
+    def scan(self, actor):
+        self.actor = actor
+        self.toc = TableOfChapters(actor)
+        #parts = self.html_coverpage()
+        for body in self.parser.root.findall('body'):
+            self.scan_tree(body)
 
-    def get_toc(self):
-        return self.toc.html()
+    def get_result(self):
+        return self.actor.get_result()
+
+
+class FragmentKeeper:
+
+    def __init__(self):
+        self.data = []
+        self.positions = []
+
+    def append(self, text):
+        self.data.append(text)
+
+    def position(self):
+        return len(self.data)
+
+    def push_tag_position(self):
+        position = self.position()
+        self.positions.append(position)
+        return position
+
+    def pop_tag_position(self):
+        return self.positions.pop()
+
+    def cut_from(self, position):
+        pieces = self.data[position:]
+        del self.data[position:]
+        return "".join(pieces)
+
+    def copy_from(self, position):
+        pieces = self.data[position:]
+        text = "".join(pieces)
+        self.data[position:] = (text,)
+        return text
+
+    def cut_tag_text(self):
+        tag_position = self.positions[-1]
+        return self.cut_from(tag_position)
+
+    def copy_tag_text(self):
+        tag_position = self.positions[-1]
+        return self.copy_from(tag_position)
+
+    def get_result(self):
+        self.data = [ "".join(self.data) ]
+        return self.data[0]
+
+
+class DocWriter:
+
+    no_strip_tags = ("p", "title", "subtitle", "v")
+
+    def __init__(self, output="html"):
+        self.decorations = decorations[output]
+        self.fragments = FragmentKeeper()
+        self.strip_areas = [True]
+
+    def get_result(self):
+        return self.fragments.get_result()
+
+    def toc_chapter(self, chapter):
+        template = self.decorations["toc_chapter"][0]
+        text = template.format(
+            label=chapter.label,
+            number=chapter.number,
+            title=chapter.title,
+        )
+        return text
+
+    def strip_needed(self):
+        return self.strip_areas[-1]
+
+    def add_strip_area(self, mode):
+        self.strip_areas.append(mode)
+
+    def end_strip_area(self):
+        self.strip_areas.pop()
+
+    def add_text(self, text):
+        if self.strip_needed():
+            text = text.strip()
+        self.fragments.append(text)
+
+    def call_if_exists(self, method):
+        call = getattr(self, method, None)
+        if call:
+            call()
+
+    def add_tag(self, tag):
+        prefix = self.decorations[tag][0]
+        self.fragments.append(prefix)
+        self.call_if_exists("add_"+tag)
+        self.fragments.push_tag_position()
+        if tag in self.no_strip_tags:
+            self.add_strip_area(False)
+
+    def end_tag(self, tag):
+        if tag in self.no_strip_tags:
+            self.end_strip_area()
+        self.fragments.pop_tag_position()
+        self.call_if_exists("end_"+tag)
+        self.fragments.append( self.decorations[tag][1] )
+
+    def add_chapter(self, chapter):
+        template = self.decorations['chapter'][0]
+        text = template.format(label=chapter.label, number=chapter.number)
+        self.fragments.append(text)
+
+    def end_chapter(self, chapter):
+        template = self.decorations['chapter'][1]
+        text = template.format(label=chapter.label, number=chapter.number)
+        self.fragments.append(text)
