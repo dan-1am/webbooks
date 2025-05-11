@@ -11,73 +11,13 @@ import os
 import zipfile
 
 
-decorations = {
-"text": {
-    'toc_chapter': ("{number}. {title} [{label}]\n", ""),
-    'chapter': ("\n* * *\nChapter {number} [{label}]\n\n", "\n\n"),
-    'body': ("-"*40+"\n", ""),
-    'section': ("", ""),
-    'title': ("", "\n\n"),
-    'subtitle': ("", "\n\n"),
-    'epigraph': (" "*10, "\n"),
-    'a': ("", ""),
-    'p': ("", "\n\n"),
-    'br': ("", "\n"),
-    'table': ("\n", "\n"),
-    'tr': ("", "\n"),
-    'th': ("", "-"*72 + "\n"),
-    'td': (" ", " |"),
-    'emphasis': ("_", "_"),
-    'strong': ("*", "*"),
-    'sub':("^(", ")"),
-    'sup':("_(", ")"),
-    'strikethrough':("--(", ")--"),
-    'code':("\n", "\n"),
-    'poem': ("", ""),
-    'stanza': ("", "\n"),
-    'v': (" "*10, "\n"),
-    'cite': (" "*10, "\n"),
-    'text-author': (" "*10, "\n"),
-    'empty-line': ("-"*72, "\n"),
-},
-"html": {
-    'toc_chapter': ("<li><a href='#{label}'>{number}. {title}</a></li>\n", ""),
-    'chapter': ("<hr><h2 id='{label}'>Chapter {number}</h2>\n", "\n\n"),
-    'body': ("<hr><hr>\n", ""),
-    'section': ("", ""),
-    'title': ("<h2>", "</h2>\n"),
-    'subtitle': ("<h3>", "</h3>\n"),
-    'epigraph': ('<div style="text-align: right; font-style: italic">', "</div>\n"),
-    'a': ("", ""),
-    'p': ("<p>", "</p>\n"),
-    'br': ("<br>\n", ""),
-    'table': ('<table border="1">\n', "</table>\n"),
-    'tr': ("<tr>\n", "</tr>\n"),
-    'th': ("<th>\n", "</th>\n"),
-    'td': ("<td>", "</td>\n"),
-    'emphasis': ("<em>", "</em>"),
-    'strong': ("<strong>", "</strong>"),
-    'sub':("<sub>", "</sub>"),
-    'sup':("<sup>", "</sup>"),
-    'strikethrough':("<s>", "</s>"),
-    'code':("<pre>", "</pre>"),
-    'poem': ("", ""),
-    'stanza': ('<div style="text-align: center;"><p>\n', "</p></div>\n"),
-    'v': ("", "<br>\n"),
-    'cite': ("<cite>", "</cite>"),
-    'text-author': ('<div style="text-align: right">', "</div>"),
-    'empty-line': ("<br>", ""),
-},
-}
-
-
 class BookParser:
 
     def __init__(self, text=None, file=None):
         if text is None:
-            self.root = self.parse_file(file)
+            self.tree = self.parse_file(file)
         else:
-            self.root = ET.fromstring(text)
+            self.tree = ET.fromstring(text)
         self.strip_namespaces()
 
     def parse_file(self, file):
@@ -106,7 +46,7 @@ class BookParser:
 
     def strip_namespaces(self):
         """ Hack to not bother with namespaces """
-        for element in self.root.iter():
+        for element in self.tree.iter():
             element.tag = element.tag[element.tag.rfind('}')+1:]
 
 
@@ -171,8 +111,8 @@ class TableOfChapters:
 
 class BookScanner:
 
-    def __init__(self, text=None, file=None):
-        self.parser = BookParser(text, file)
+    def __init__(self, tree):
+        self.tree = tree
         self.actor = None
 
     def scan_inner(self, tree):
@@ -224,7 +164,7 @@ class BookScanner:
         self.actor = actor
         self.toc = TableOfChapters()
         #parts = self.html_coverpage()
-        for body in self.parser.root.findall('body'):
+        for body in self.tree.findall('body'):
             self.scan_tree(body)
 
     def get_result(self):
@@ -273,6 +213,66 @@ class FragmentKeeper:
     def get_result(self):
         self.data = [ "".join(self.data) ]
         return self.data[0]
+
+
+decorations = {
+"text": {
+    'toc_chapter': ("{number}. {title} [{label}]\n", ""),
+    'chapter': ("\n* * *\nChapter {number} [{label}]\n\n", "\n\n"),
+    'body': ("-"*40+"\n", ""),
+    'section': ("", ""),
+    'title': ("", "\n\n"),
+    'subtitle': ("", "\n\n"),
+    'epigraph': (" "*10, "\n"),
+    'a': ("", ""),
+    'p': ("", "\n\n"),
+    'br': ("", "\n"),
+    'table': ("\n", "\n"),
+    'tr': ("", "\n"),
+    'th': ("", "-"*72 + "\n"),
+    'td': (" ", " |"),
+    'emphasis': ("_", "_"),
+    'strong': ("*", "*"),
+    'sub':("^(", ")"),
+    'sup':("_(", ")"),
+    'strikethrough':("--(", ")--"),
+    'code':("\n", "\n"),
+    'poem': ("", ""),
+    'stanza': ("", "\n"),
+    'v': (" "*10, "\n"),
+    'cite': (" "*10, "\n"),
+    'text-author': (" "*10, "\n"),
+    'empty-line': ("-"*72, "\n"),
+},
+"html": {
+    'toc_chapter': ("<li><a href='#{label}'>{number}. {title}</a></li>\n", ""),
+    'chapter': ("<hr><h2 id='{label}'>Chapter {number}</h2>\n", "\n"),
+    'body': ("<hr>\n", ""),
+    'section': ("", ""),
+    'title': ("<h2>", "</h2>\n"),
+    'subtitle': ("<h3>", "</h3>\n"),
+    'epigraph': ('<div style="text-align: right; font-style: italic">', "</div>\n"),
+    'a': ("", ""),
+    'p': ("<p>", "</p>\n"),
+    'br': ("<br>\n", ""),
+    'table': ('<table border="1">\n', "</table>\n"),
+    'tr': ("<tr>\n", "</tr>\n"),
+    'th': ("<th>\n", "</th>\n"),
+    'td': ("<td>", "</td>\n"),
+    'emphasis': ("<em>", "</em>"),
+    'strong': ("<strong>", "</strong>"),
+    'sub':("<sub>", "</sub>"),
+    'sup':("<sup>", "</sup>"),
+    'strikethrough':("<s>", "</s>"),
+    'code':("<pre>", "</pre>"),
+    'poem': ("", ""),
+    'stanza': ('<div style="text-align: center;"><p>\n', "</p></div>\n"),
+    'v': ("", "<br>\n"),
+    'cite': ("<cite>", "</cite>"),
+    'text-author': ('<div style="text-align: right">', "</div>"),
+    'empty-line': ("<br>", ""),
+},
+}
 
 
 class DocWriter:
@@ -339,3 +339,24 @@ class DocWriter:
         template = self.decorations['chapter'][1]
         text = template.format(label=chapter.label, number=chapter.number)
         self.fragments.append(text)
+
+
+class BookProcessor:
+
+    def __init__(self, text=None, file=None):
+        if text or file:
+            self.load(text, file)
+
+    def load(self, text=None, file=None):
+        parser = BookParser(text, file)
+        tree = parser.tree
+        self.scanner = BookScanner(tree)
+        self.content = dict()
+
+    def get_content(self, format="html"):
+        writer = self.content.get(format, None)
+        if not writer:
+            writer = DocWriter(format)
+            self.scanner.scan(writer)
+            self.content[format] = writer
+        return writer.get_result()

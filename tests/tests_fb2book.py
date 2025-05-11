@@ -5,7 +5,8 @@ from unittest.mock import Mock,call
 import xml.etree.ElementTree as ET
 import zipfile
 
-from webbooks.fb2book import (Chapter,TableOfChapters,BookScanner,DocWriter)
+from webbooks.fb2book import (Chapter,TableOfChapters,BookScanner,
+    DocWriter,BookProcessor)
 
 
 sample_fb2 = """\
@@ -261,15 +262,33 @@ class FB2BookTest(unittest.TestCase):
         self.assertEqual(result, source)
 
 
-class BookScannerTest(unittest.TestCase):
+html_sample = """\
+<hr>
+<hr><h2 id='toc1'>Chapter 1</h2>
+<hr><h2 id='toc2'>Chapter 1.1</h2>
+<h2>First title.</h2>
+<p>Beginning.</p>
+<p>External image.</p>
+<p>Internal image.</p>
+<div style="text-align: center;"><p>
+poem1<br>
+poem2<br>
+</p></div>
+<p>End...</p>
 
-    def test_scanner_creation(self):
-        scanner = BookScanner("<body></body>")
-        self.assertEqual(scanner.parser.root.tag, "body")
+
+"""
+
+class BookProcessorTest(unittest.TestCase):
+
+    def test_book_processor_creation(self):
+        book = BookProcessor("<body></body>")
+        self.assertEqual(book.scanner.tree.tag, "body")
 
     def test_display(self):
-        scanner = BookScanner(sample_fb2)
-        writer = DocWriter(output="html")
-        scanner.scan(writer)
-        with open("test.txt", "w") as f:
-            f.write( writer.get_result() )
+        book = BookProcessor(sample_fb2)
+        text = book.get_content()
+        if text != html_sample:
+            with open("bad_book.txt", "w") as f:
+                f.write(text)
+        self.assertEqual(text, html_sample)
