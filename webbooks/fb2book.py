@@ -111,6 +111,7 @@ class BookParser:
 
 
 class Chapter:
+
     def __init__(self, label):
         self.title = ""
         self.label = label
@@ -138,8 +139,7 @@ class Chapter:
 
 class TableOfChapters:
 
-    def __init__(self, actor):
-        self.actor = actor
+    def __init__(self):
         self.tree = Chapter("")
         self.path = [self.tree]
         self.total = 0
@@ -151,29 +151,29 @@ class TableOfChapters:
         self.total += 1
         chapter = self.current().add_child(f"toc{self.total}")
         self.path.append(chapter)
-        self.actor.add_chapter(chapter)
         return chapter
 
     def end_chapter(self):
         chapter = self.path.pop()
-        self.actor.end_chapter(chapter)
+        return chapter
 
     def add_chapter_title(self, text):
         chapter = self.current()
         chapter.title = text
 
-    def get_result(self, chapter=None):
+    def scan(self, actor, chapter=None):
         if chapter is None:
             chapter = self.tree
         for child in chapter.children:
-            self.actor.toc_chapter(child)
-            self.get_result(child)
+            actor.toc_chapter(child)
+            self.scan(actor, child)
 
 
 class BookScanner:
 
     def __init__(self, text=None, file=None):
         self.parser = BookParser(text, file)
+        self.actor = None
 
     def scan_inner(self, tree):
         if tree.text:
@@ -185,7 +185,8 @@ class BookScanner:
 
     def add_chapter_for_extra_title(self):
         self.toc.end_chapter()
-        self.toc.add_chapter()
+        chapter = self.toc.add_chapter()
+        self.actor.add_chapter(chapter)
 
     def handle_new_title(self):
         chapter = self.toc.current()
@@ -195,10 +196,12 @@ class BookScanner:
     def wrap_chapter(self, tree):
         is_chapter = tree.tag in ("body","section")
         if is_chapter:
-            self.toc.add_chapter()
+            chapter = self.toc.add_chapter()
+            self.actor.add_chapter(chapter)
         self.scan_inner(tree)
         if is_chapter:
-            self.toc.end_chapter()
+            chapter = self.toc.end_chapter()
+            self.actor.end_chapter(chapter)
 
     def text_tag(self, tree):
         if tree.tag == "title":
@@ -219,7 +222,7 @@ class BookScanner:
 
     def scan(self, actor):
         self.actor = actor
-        self.toc = TableOfChapters(actor)
+        self.toc = TableOfChapters()
         #parts = self.html_coverpage()
         for body in self.parser.root.findall('body'):
             self.scan_tree(body)

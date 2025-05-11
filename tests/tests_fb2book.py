@@ -85,30 +85,24 @@ class ChapterTest(unittest.TestCase):
 
 class TableOfChaptersTest(unittest.TestCase):
 
-    def setUp(self):
-        self.actor = Mock()
-        self.toc = TableOfChapters(self.actor)
-
     def test_toc_creation(self):
-        toc = self.toc
-        self.assertEqual(toc.actor, self.actor)
+        toc = TableOfChapters()
         self.assertIsInstance(toc.tree, Chapter)
         self.assertEqual(toc.path, [toc.tree])
         self.assertEqual(toc.total, 0)
 
     def test_current_chapter_tracking(self):
-        toc = self.toc
+        toc = TableOfChapters()
         self.assertEqual(toc.current(), toc.tree)
         c1 = toc.add_chapter()
         c1_2 = toc.add_chapter()
-        toc.actor.add_chapter.assert_called_with(c1_2)
         self.assertEqual(toc.total, 2)
         self.assertEqual(toc.current(), c1_2)
         toc.end_chapter()
         self.assertEqual(toc.current(), c1)
 
     def test_add_new_chapter(self):
-        toc = self.toc
+        toc = TableOfChapters()
         c1 = toc.add_chapter()
         c1_2 = toc.add_chapter()
         toc.end_chapter()
@@ -118,22 +112,23 @@ class TableOfChaptersTest(unittest.TestCase):
         self.assertEqual(toc.tree.children, [c1, c2])
 
     def test_add_chapter_title(self):
-        toc = self.toc
+        toc = TableOfChapters()
         c = toc.add_chapter()
         toc.add_chapter_title("t1")
         self.assertEqual(c.title, "t1")
 
-    def test_toc_get_result(self):
-        toc = self.toc
+    def test_toc_scan(self):
+        toc = TableOfChapters()
         c1 = toc.add_chapter()
         c1_1 = toc.add_chapter()
         toc.end_chapter()
         toc.end_chapter()
         c2 = toc.add_chapter()
         toc.end_chapter()
-        toc.get_result()
+        actor = Mock()
+        toc.scan(actor)
         calls = [call(c1), call(c1_1), call(c2)]
-        toc.actor.toc_chapter.assert_has_calls(calls)
+        actor.toc_chapter.assert_has_calls(calls)
 
 
 @unittest.skip
