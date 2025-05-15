@@ -245,7 +245,7 @@ decorations = {
     'empty-line': ("-"*72, "\n"),
 },
 "html": {
-    'toc_chapter': ("<li><a href='#{label}'>{number}. {title}</a></li>\n", ""),
+    'toc_chapter': ("<p><a href='#{label}'>{number}. {title}</a></p>\n", ""),
     'chapter': ("<hr><h2 id='{label}'>Chapter {number}</h2>\n", "\n"),
     'body': ("<hr>\n", ""),
     'section': ("", ""),
