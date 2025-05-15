@@ -263,6 +263,8 @@ class FB2BookTest(unittest.TestCase):
 
 
 html_sample = """\
+<p><a href='#toc1'>1. </a></p>
+<p><a href='#toc2'>1.1. First title.</a></p>
 <hr>
 <hr><h2 id='toc1'>Chapter 1</h2>
 <hr><h2 id='toc2'>Chapter 1.1</h2>
@@ -279,6 +281,7 @@ poem2<br>
 
 """
 
+
 class BookProcessorTest(unittest.TestCase):
 
     def test_book_processor_creation(self):
@@ -287,8 +290,9 @@ class BookProcessorTest(unittest.TestCase):
 
     def test_display(self):
         book = BookProcessor(sample_fb2)
-        text = book.get_content()
-        if text != html_sample:
+        text,toc = book.get_content()
+        full = toc + text
+        if full != html_sample:
             with open("bad_book.txt", "w") as f:
-                f.write(text)
-        self.assertEqual(text, html_sample)
+                f.write(full)
+        self.assertEqual(full, html_sample)

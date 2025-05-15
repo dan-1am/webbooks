@@ -166,9 +166,7 @@ class BookScanner:
         #parts = self.html_coverpage()
         for body in self.tree.findall('body'):
             self.scan_tree(body)
-
-    def get_result(self):
-        return self.actor.get_result()
+        self.toc.scan(self.actor)
 
 
 class FragmentKeeper:
@@ -282,10 +280,14 @@ class DocWriter:
     def __init__(self, output="html"):
         self.decorations = decorations[output]
         self.fragments = FragmentKeeper()
+        self.toc_fragments = FragmentKeeper()
         self.strip_areas = [True]
 
     def get_result(self):
         return self.fragments.get_result()
+
+    def get_toc(self):
+        return self.toc_fragments.get_result()
 
     def toc_chapter(self, chapter):
         template = self.decorations["toc_chapter"][0]
@@ -294,7 +296,7 @@ class DocWriter:
             number=chapter.number,
             title=chapter.title,
         )
-        return text
+        self.toc_fragments.append(text)
 
     def strip_needed(self):
         return self.strip_areas[-1]
@@ -353,10 +355,16 @@ class BookProcessor:
         self.scanner = BookScanner(tree)
         self.content = dict()
 
-    def get_content(self, format="html"):
+    def get_format_writer(self, format):
         writer = self.content.get(format, None)
         if not writer:
             writer = DocWriter(format)
             self.scanner.scan(writer)
             self.content[format] = writer
-        return writer.get_result()
+        return writer
+
+    def get_content(self, format="html"):
+        writer = self.get_format_writer(format)
+        content = writer.get_result()
+        toc = writer.get_toc()
+        return content, toc
