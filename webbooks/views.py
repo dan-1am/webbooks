@@ -8,7 +8,7 @@ from django.db.models import Count,OuterRef,Subquery
 from django.db.models.functions import Coalesce
 
 from . import conf
-from .fb2book import FB2Book
+from .fb2book import BookProcessor
 from .models import *
 from .services import file_hash,add_book_file
 
@@ -91,9 +91,9 @@ class ReadView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         book = self.object
         context['authors'] = book_authors(book)
-        fb2 = FB2Book(file=book.full_path())
-        html = fb2.to_html()
-        context['text'] = fb2.get_toc() + html
+        raw_book = BookProcessor(file=book.full_path())
+        text,toc = raw_book.get_content()
+        context['text'] = toc + text
         return context
 
 

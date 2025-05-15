@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from .fb2book import FB2Book
+from .fb2book import BookProcessor
 from . import conf
 from .models import *
 
