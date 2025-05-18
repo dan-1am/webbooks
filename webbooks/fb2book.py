@@ -50,6 +50,62 @@ class BookParser:
             element.tag = element.tag[element.tag.rfind('}')+1:]
 
 
+class BookMetadata:
+
+    def __init__(self, tree):
+        self.tree = tree
+        self.title_info = None
+        self.authors = []
+        self.genres = []
+        self.sequence_name = ""
+        self.sequence_number = 1
+
+    def collect(self):
+        if not self.title_info:
+            meta_tree = self.tree.find("./description/title-info")
+            self.title_info = self.extract_metadata(meta_tree)
+            self.title = self.title_info.get("book-title", "")
+            self.date = self.title_info.get("date", "")
+
+    def extract_metadata(self, tree):
+        metadata = {}
+        if tree is None:
+            tree = ET.Element("dummy")
+        for child in tree:
+            if child.tag == "author":
+                self.collect_author_names(child)
+            elif child.tag == "genre":
+                self.collect_genre(child)
+            elif child.tag == "sequence":
+                self.collect_sequence_info(child)
+            elif child.tag != "coverpage":
+                metadata[child.tag] = child.text.strip()
+        return metadata
+
+    def annotation_to_text(self):
+        raise NotImplementedError
+
+    def collect_author_names(self, author):
+        part_names = ("last-name", "first-name", "middle-name", "nickname")
+        parts = filter(None, (author.findtext(p) for p in part_names) )
+        name = ' '.join( (p.strip() for p in parts) )
+        self.authors.append(name)
+
+    def collect_genre(self, tag):
+        genre_name = tag.text.strip()
+        self.genres.append(genre_name)
+
+    def collect_sequence_info(self, sequence):
+        name = sequence.attrib.get("name", "").strip()
+        number_text = sequence.attrib.get("number", None)
+        try:
+            number = int(number_text)
+        except (TypeError, ValueError):
+            number = 1
+        self.sequence = name
+        self.sequence_number = number
+
+
 class Chapter:
 
     def __init__(self, label):
@@ -352,6 +408,7 @@ class BookProcessor:
     def load(self, text=None, file=None):
         parser = BookParser(text, file)
         tree = parser.tree
+        self.metadata = BookMetadata(tree)
         self.scanner = BookScanner(tree)
         self.content = dict()
 
@@ -368,3 +425,7 @@ class BookProcessor:
         content = writer.get_result()
         toc = writer.get_toc()
         return content, toc
+
+    def get_metadata(self):
+        self.metadata.collect()
+        return self.metadata
