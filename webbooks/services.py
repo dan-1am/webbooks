@@ -59,25 +59,25 @@ def set_sequence(book, name):
         book.sequence = None
 
 
-def fill_extra_info(book, fb2):
+def fill_extra_info(book, metadata):
     for field in ('date','annotation', 'sequence_number'):
-        setattr(book, field, getattr(fb2, field, ""))
-    set_sequence(book, fb2.sequence)
+        setattr(book, field, getattr(metadata, field, ""))
+    set_sequence(book, metadata.sequence)
     book.save()
-    set_authors(book, fb2.authors)
-    set_genres(book, fb2.genres)
+    set_authors(book, metadata.authors)
+    set_genres(book, metadata.genres)
 
 
 def add_book(full_path, hash=None, id=None):
-    fb2 = FB2Book(file=full_path)
-    fb2.describe()
+    content = BookProcessor(file=full_path)
+    metadata = content.get_metadata()
     if hash is None:
         hash = file_hash(full_path)
     book_path = get_book_path(full_path)
-    book = Book(title=fb2.title, file=book_path, hash=hash)
+    book = Book(title=metadata.title, file=book_path, hash=hash)
     if id is not None:
         book.id = id
-    fill_extra_info(book, fb2)
+    fill_extra_info(book, metadata)
     return book
 
 

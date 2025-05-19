@@ -39,7 +39,7 @@ class BookParser:
         if is_file_like:
             handle = file
         elif str(file).endswith(".fb2.zip"):
-            handle = open_zip(file)
+            handle = self.open_zip(file)
         else:
             handle = open(file, "rb")
         return handle
@@ -66,6 +66,7 @@ class BookMetadata:
             self.title_info = self.extract_metadata(meta_tree)
             self.title = self.title_info.get("book-title", "")
             self.date = self.title_info.get("date", "")
+            self.annotation = self.title_info.get("annotation", "")
 
     def extract_metadata(self, tree):
         metadata = {}

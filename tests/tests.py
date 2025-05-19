@@ -3,7 +3,7 @@ import tempfile
 from django.test import TestCase
 
 from webbooks import conf
-from webbooks.fb2book import FB2Book
+from webbooks.fb2book import BookProcessor
 from webbooks.models import *
 from webbooks.services import *
 
@@ -93,17 +93,17 @@ class TestServices(TestCase):
 """
 
     def test_fill_extra_info(self):
-        fb2 = FB2Book(self.fb2_example)
-        fb2.describe()
-        book = Book(title=fb2.title, file="1.fb2", hash="123")
-        fill_extra_info(book, fb2)
+        content = BookProcessor(self.fb2_example)
+        metadata = content.get_metadata()
+        book = Book(title=metadata.title, file="1.fb2", hash="123")
+        fill_extra_info(book, metadata)
         for field in ("date","annotation","sequence_number"):
-            self.assertEqual(getattr(book, field), getattr(fb2, field))
-        self.assertEqual(book.sequence.name, fb2.sequence)
+            self.assertEqual(getattr(book, field), getattr(metadata, field))
+        self.assertEqual(book.sequence.name, metadata.sequence)
         authors = sorted( book.authors.values_list("name", flat=True) )
-        self.assertEqual(authors, fb2.authors)
+        self.assertEqual(authors, metadata.authors)
         genres = sorted( book.genres.values_list("name", flat=True) )
-        self.assertEqual(genres, fb2.genres)
+        self.assertEqual(genres, metadata.genres)
 
     def find_some_book(self):
         return next( Path(conf.WEBBOOKS_ROOT).glob("**/*.fb2*") )
