@@ -173,8 +173,8 @@ class ImageProcessor:
         self.actor = actor
         self.embed = embed
 
-    def add_image(self, tree):
-        link = self.get_image_link(tree)
+    def add_image(self, image_node):
+        link = self.get_image_link(image_node)
         if not link:
             return
         if link[0] == "#":
@@ -194,16 +194,14 @@ class ImageProcessor:
         data, content_type  = self.get_image_data(name)
         if data:
             self.actor.embed_image(name, data, content_type)
-#            link_code = f'<img src="data:{content_type};base64, {data}">\n'
         else:
             link_code = f"(Missing image: {name})"
 
     def link_image(self, link):
         self.actor.link_image(link)
-#        return f'<img src="{link}">\n'
 
-    def get_image_link(self, tree):
-        for k,v in tree.attrib.items():
+    def get_image_link(self, image_node):
+        for k,v in image_node.attrib.items():
             if k.endswith("href"):
                 return v
 
@@ -228,10 +226,8 @@ class BookScanner:
         self.tree = tree
         self.actor = None
 
-    def image_link(self, tree):
-        for k,v in tree.attrib.items():
-            if k.endswith("href"):
-                return v
+    def add_image(self, image_node):
+        ImageProcessor(self.tree, self.actor).add_image(image_node)
 
     def scan_inner(self, tree):
         if tree.text:
@@ -273,7 +269,7 @@ class BookScanner:
 
     def scan_tree(self, tree):
         if tree.tag == "image":
-            ImageProcessor(self.tree, self.actor).add_image(tree)
+            self.add_image(tree)
         else:
             self.text_tag(tree)
 
