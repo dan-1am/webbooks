@@ -166,11 +166,72 @@ class TableOfChapters:
             self.scan(actor, child)
 
 
+class ImageProcessor:
+
+    def __init__(self, root=None, actor=None, embed=True):
+        self.root = root
+        self.actor = actor
+        self.embed = embed
+
+    def add_image(self, tree):
+        link = self.get_image_link(tree)
+        if not link:
+            return
+        if link[0] == "#":
+            self.add_internal_image(link)
+        else:
+            self.link_image(link)
+
+    def add_internal_image(self, link):
+        name = link.removeprefix("#")
+        if self.embed:
+            self.embed_image(name)
+        else:
+            new_link = self.extracted_link(name)
+            self.link_image(new_link)
+
+    def embed_image(self, name):
+        data, content_type  = self.get_image_data(name)
+        if data:
+            self.actor.embed_image(name, data, content_type)
+#            link_code = f'<img src="data:{content_type};base64, {data}">\n'
+        else:
+            link_code = f"(Missing image: {name})"
+
+    def link_image(self, link):
+        self.actor.link_image(link)
+#        return f'<img src="{link}">\n'
+
+    def get_image_link(self, tree):
+        for k,v in tree.attrib.items():
+            if k.endswith("href"):
+                return v
+
+    def get_image_data(self, link):
+        name = link.removeprefix('#')
+        for binary in self.root.findall("binary"):
+            if binary.attrib['id'] == name:
+                content_type = binary.attrib.get("content-type", "image/jpg")
+                return binary.text, content_type
+        return None, None
+
+
+    def add_coverpage(self):
+        cover = self.root.find("./description/title-info/coverpage/image")
+        if cover is not None:
+            return self.add_image(cover)
+
+
 class BookScanner:
 
     def __init__(self, tree):
         self.tree = tree
         self.actor = None
+
+    def image_link(self, tree):
+        for k,v in tree.attrib.items():
+            if k.endswith("href"):
+                return v
 
     def scan_inner(self, tree):
         if tree.text:
@@ -212,8 +273,7 @@ class BookScanner:
 
     def scan_tree(self, tree):
         if tree.tag == "image":
-#            self.image(tree)
-            pass
+            ImageProcessor(self.tree, self.actor).add_image(tree)
         else:
             self.text_tag(tree)
 
@@ -274,6 +334,7 @@ decorations = {
 "text": {
     'toc_chapter': ("{number}. {title} [{label}]\n", ""),
     'chapter': ("\n* * *\nChapter {number} [{label}]\n\n", "\n\n"),
+    'image': ("", "", '(image {url})'),
     'body': ("-"*40+"\n", ""),
     'section': ("", ""),
     'title': ("", "\n\n"),
@@ -302,6 +363,7 @@ decorations = {
 "html": {
     'toc_chapter': ("<p><a href='#{label}'>{number}. {title}</a></p>\n", ""),
     'chapter': ("<hr><h2 id='{label}'>Chapter {number}</h2>\n", "\n"),
+    'image': ("", "", '<img src="{url}">'),
     'body': ("<hr>\n", ""),
     'section': ("", ""),
     'title': ("<h2>", "</h2>\n"),
@@ -397,6 +459,16 @@ class DocWriter:
     def end_chapter(self, chapter):
         template = self.decorations['chapter'][1]
         text = template.format(label=chapter.label, number=chapter.number)
+        self.fragments.append(text)
+
+    def embed_image(self, name, data, content_type):
+        single_line = "".join( data.split() )
+        url = "data:{0};base64, {1}".format(content_type, single_line)
+        self.link_image(url)
+
+    def link_image(self, url):
+        template = self.decorations['image'][2]
+        text = template.format(url=url)
         self.fragments.append(text)
 
 

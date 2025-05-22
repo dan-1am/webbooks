@@ -5,8 +5,8 @@ from unittest.mock import Mock,call
 import xml.etree.ElementTree as ET
 import zipfile
 
-from webbooks.fb2book import (Chapter,TableOfChapters,BookScanner,
-    DocWriter,BookProcessor)
+from webbooks.fb2book import (Chapter,TableOfChapters,ImageProcessor,
+    BookScanner,DocWriter,BookProcessor)
 
 
 sample_fb2 = """\
@@ -130,6 +130,69 @@ class TableOfChaptersTest(unittest.TestCase):
         toc.scan(actor)
         calls = [call(c1), call(c1_1), call(c2)]
         actor.toc_chapter.assert_has_calls(calls)
+
+
+class ImageProcessorTest(unittest.TestCase):
+
+    def test_creation(self):
+        ip = ImageProcessor("root", "actor", False)
+        self.assertEqual(ip.root, "root")
+        self.assertEqual(ip.actor, "actor")
+        self.assertEqual(ip.embed, False)
+
+    def mock_add_image(self, link):
+        ip = ImageProcessor()
+        ip.get_image_link = Mock(return_value=link)
+        ip.add_internal_image = Mock()
+        ip.link_image = Mock()
+        ip.add_image("tree")
+        ip.get_image_link.assert_called_once_with("tree")
+        return ip
+
+    def test_add_image_embedded_in_fb2(self):
+        ip = self.mock_add_image("#lnk")
+        ip.add_internal_image.assert_called_once()
+        ip.link_image.assert_not_called()
+
+    def test_add_image_with_external_link(self):
+        ip = self.mock_add_image("lnk")
+        ip.add_internal_image.assert_not_called()
+        ip.link_image.assert_called_once()
+
+    def test_add_internal_image(self):
+        ip = ImageProcessor()
+        ei = ip.embed_image = Mock()
+        ip.add_internal_image("#lnk")
+        ei.assert_called_once_with("lnk")
+
+    def test_embed_image(self):
+        ip = ImageProcessor()
+        ip.get_image_data = Mock(return_value=("data", "type"))
+        ip.actor = Mock()
+        ip.embed_image("n1")
+        ip.actor.embed_image.assert_called_once_with("n1", "data", "type")
+
+    def test_link_image(self):
+        ip = ImageProcessor()
+        ip.actor = Mock()
+        ip.link_image("lnk")
+        ip.actor.link_image.assert_called_once_with("lnk")
+
+    def test_get_image_link(self):
+        ip = ImageProcessor()
+        tree = ET.fromstring('<image href="lnk"/>')
+        link = ip.get_image_link(tree)
+        self.assertEqual(link, "lnk")
+
+    def test_get_image_list(self):
+        fb2 = """<body>
+        <binary id="lnk" content-type="image/png">123</binary>
+        </body>"""
+        root = ET.fromstring(fb2)
+        ip = ImageProcessor(root)
+        data,type = ip.get_image_data("#lnk")
+        self.assertEqual(data, "123")
+        self.assertEqual(type, "image/png")
 
 
 @unittest.skip
@@ -270,8 +333,8 @@ html_sample = """\
 <hr><h2 id='toc2'>Chapter 1.1</h2>
 <h2>First title.</h2>
 <p>Beginning.</p>
-<p>External image.</p>
-<p>Internal image.</p>
+<img src="http://example.com/external.jpg"><p>External image.</p>
+<img src="data:image/png;base64, efgh"><p>Internal image.</p>
 <div style="text-align: center;"><p>
 poem1<br>
 poem2<br>
