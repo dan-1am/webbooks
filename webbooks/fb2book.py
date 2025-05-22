@@ -214,20 +214,11 @@ class ImageProcessor:
         return None, None
 
 
-    def add_coverpage(self):
-        cover = self.root.find("./description/title-info/coverpage/image")
-        if cover is not None:
-            return self.add_image(cover)
-
-
 class BookScanner:
 
     def __init__(self, tree):
         self.tree = tree
         self.actor = None
-
-    def add_image(self, image_node):
-        ImageProcessor(self.tree, self.actor).add_image(image_node)
 
     def scan_inner(self, tree):
         if tree.text:
@@ -276,10 +267,18 @@ class BookScanner:
     def scan(self, actor):
         self.actor = actor
         self.toc = TableOfChapters()
-        #parts = self.html_coverpage()
+        parts = self.add_coverpage()
         for body in self.tree.findall('body'):
             self.scan_tree(body)
         self.toc.scan(self.actor)
+
+    def add_coverpage(self):
+        cover = self.tree.find("./description/title-info/coverpage/image")
+        if cover is not None:
+            return self.add_image(cover)
+
+    def add_image(self, image_node):
+        ImageProcessor(self.tree, self.actor).add_image(image_node)
 
 
 class FragmentKeeper:

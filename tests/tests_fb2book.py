@@ -328,7 +328,7 @@ class FB2BookTest(unittest.TestCase):
 html_sample = """\
 <p><a href='#toc1'>1. </a></p>
 <p><a href='#toc2'>1.1. First title.</a></p>
-<hr>
+<img src="data:image/jpg;base64, abcd"><hr>
 <hr><h2 id='toc1'>Chapter 1</h2>
 <hr><h2 id='toc2'>Chapter 1.1</h2>
 <h2>First title.</h2>
