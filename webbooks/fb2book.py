@@ -405,12 +405,19 @@ class DocWriter:
 
     def toc_chapter(self, chapter):
         template = self.decorations["toc_chapter"][0]
+        title = self.simplify_title(chapter.title)
         text = template.format(
             label=chapter.label,
             number=chapter.number,
-            title=chapter.title,
+            title=title,
         )
         self.toc_fragments.append(text)
+
+    def simplify_title(self, title):
+        title = title.strip()
+        title = title.replace("\n", " ").replace("<br>", " ")
+        title = title.replace("</p>", "").replace("<p>", "")
+        return title
 
     def strip_needed(self):
         return self.strip_areas[-1]
